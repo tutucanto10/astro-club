@@ -1,0 +1,7 @@
+{
+  "buildCommand": "prisma generate && next build",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "regions": ["gru1"]
+}
