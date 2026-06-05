@@ -5,30 +5,29 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  await prisma.coupon.delete({ where: { id: params.id } });
+  const { id } = await params;
+  await prisma.coupon.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
+  const { id } = await params;
   const body = await request.json();
-  const coupon = await prisma.coupon.update({
-    where: { id: params.id },
-    data: body,
-  });
+  const coupon = await prisma.coupon.update({ where: { id }, data: body });
   return NextResponse.json(coupon);
 }

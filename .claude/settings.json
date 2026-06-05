@@ -13,7 +13,10 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/register)",
       "Bash(npm uninstall *)",
       "Bash(git init *)",
-      "Bash(git remote *)"
+      "Bash(git remote *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git branch *)",
+      "Bash(npx prisma *)"
     ]
   }
 }

@@ -6,15 +6,16 @@ import { sendOrderShippedEmail } from "@/lib/notifications";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
+  const { id } = await params;
   const order = await prisma.order.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { items: true, address: true, user: true },
   });
 
@@ -31,17 +32,18 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
+  const { id } = await params;
   const { status, paymentStatus, trackingCode } = await request.json();
 
   const order = await prisma.order.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       ...(status && { status }),
       ...(paymentStatus && { paymentStatus }),

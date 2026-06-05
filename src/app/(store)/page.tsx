@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product/ProductCard";
+
+export const dynamic = "force-dynamic";
 import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {

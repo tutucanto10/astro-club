@@ -5,7 +5,7 @@ import { ProductPageClient } from "@/components/product/ProductPageClient";
 import { ProductCard } from "@/components/product/ProductCard";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 async function getProduct(slug: string) {
@@ -24,7 +24,8 @@ async function getRelated(categoryId: string, excludeId: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = await getProduct(params.slug);
+  const { slug } = await params;
+  const product = await getProduct(slug);
   if (!product) return { title: "Produto não encontrado" };
   return {
     title: product.name,
@@ -36,7 +37,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductPage({ params }: Props) {
-  const product = await getProduct(params.slug);
+  const { slug } = await params;
+  const product = await getProduct(slug);
   if (!product) notFound();
 
   const related = await getRelated(product.categoryId, product.id);
@@ -45,7 +47,6 @@ export default async function ProductPage({ params }: Props) {
     <div className="pt-20">
       <ProductPageClient product={product as any} />
 
-      {/* Related products */}
       {related.length > 0 && (
         <div className="max-w-7xl mx-auto px-6 lg:px-8 pb-20 mt-20 border-t border-border pt-16">
           <h2 className="font-display text-3xl lg:text-4xl tracking-wide mb-10">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import { formatPrice } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -173,7 +174,7 @@ export default function CheckoutPage() {
           <p className="text-muted-foreground mb-8">
             Pagamento aprovado. Você receberá um email de confirmação em breve.
           </p>
-          <a href="/" className="text-sm underline underline-offset-4">Voltar para o início</a>
+          <Link href="/" className="text-sm underline underline-offset-4">Voltar para o início</Link>
         </div>
       </div>
     );
@@ -184,7 +185,7 @@ export default function CheckoutPage() {
       <div className="pt-20 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="font-display text-4xl tracking-wide mb-4">Carrinho vazio</h1>
-          <a href="/products" className="text-sm underline underline-offset-4">Explorar produtos</a>
+          <Link href="/products" className="text-sm underline underline-offset-4">Explorar produtos</Link>
         </div>
       </div>
     );

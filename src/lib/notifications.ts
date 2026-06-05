@@ -1,6 +1,8 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 const FROM = process.env.RESEND_FROM_EMAIL ?? "ASTRO <pedidos@astrobrand.com>";
 
 export async function sendOrderConfirmedEmail(order: {
@@ -21,7 +23,7 @@ export async function sendOrderConfirmedEmail(order: {
     )
     .join("");
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: order.customerEmail,
     subject: `Pedido confirmado — ASTRO`,
@@ -52,7 +54,7 @@ export async function sendOrderShippedEmail(order: {
   customerEmail: string;
   trackingCode?: string;
 }) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: order.customerEmail,
     subject: `Seu pedido foi enviado — ASTRO`,

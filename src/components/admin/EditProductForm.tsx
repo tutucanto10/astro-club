@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -282,12 +283,12 @@ export function EditProductForm({
           >
             {loading ? "Salvando..." : "Salvar alterações"}
           </button>
-          <a
+          <Link
             href="/admin/products"
             className="px-8 py-3 text-xs tracking-[0.15em] uppercase border border-border hover:bg-secondary transition-colors text-center"
           >
             Cancelar
-          </a>
+          </Link>
         </div>
 
         <button

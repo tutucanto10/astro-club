@@ -5,11 +5,12 @@ import { EditProductForm } from "@/components/admin/EditProductForm";
 export default async function EditProductPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const [product, categories] = await Promise.all([
     prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { variants: true, category: true },
     }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),

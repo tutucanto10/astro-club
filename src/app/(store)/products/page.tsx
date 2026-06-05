@@ -55,14 +55,15 @@ async function getCategories() {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
+  const params = await searchParams;
   const [products, categories] = await Promise.all([
-    getProducts(searchParams),
+    getProducts(params),
     getCategories(),
   ]);
 
-  const activeCategory = searchParams.category;
+  const activeCategory = params.category;
 
   return (
     <div className="pt-20">
@@ -91,7 +92,7 @@ export default async function ProductsPage({
             <ProductFilters
               categories={categories}
               activeCategory={activeCategory}
-              activeSort={searchParams.sort}
+              activeSort={params.sort}
             />
           </aside>
 
