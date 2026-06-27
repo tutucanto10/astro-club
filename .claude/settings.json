@@ -16,7 +16,9 @@
       "Bash(git remote *)",
       "Bash(git commit -m ' *)",
       "Bash(git branch *)",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(dir c:\\\\astro /b)",
+      "WebFetch(domain:ibb.co)"
     ]
   }
 }

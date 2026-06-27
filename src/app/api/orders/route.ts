@@ -1,22 +1,20 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendOrderWhatsApp } from "@/lib/notifications";
 import { z } from "zod";
 
 const orderSchema = z.object({
-  name: z.string(),
+  name: z.string().min(2),
   email: z.string().email(),
-  phone: z.string(),
-  zipCode: z.string(),
-  street: z.string(),
-  number: z.string(),
+  phone: z.string().min(10),
+  zipCode: z.string().min(8),
+  street: z.string().min(3),
+  number: z.string().min(1),
   complement: z.string().optional(),
-  district: z.string(),
-  city: z.string(),
-  state: z.string(),
-  paymentMethod: z.enum(["PIX", "CREDIT_CARD", "BOLETO"]),
+  district: z.string().min(2),
+  city: z.string().min(2),
+  state: z.string().min(2),
+  paymentMethod: z.enum(["PIX"]),
   items: z.array(
     z.object({
       productId: z.string(),
@@ -24,35 +22,25 @@ const orderSchema = z.object({
       name: z.string(),
       image: z.string().optional(),
       size: z.string().optional(),
-      quantity: z.number(),
-      price: z.number(),
+      color: z.string().optional(),
+      quantity: z.number().int().positive(),
+      price: z.number().positive(),
     })
-  ),
+  ).min(1),
 });
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const data = orderSchema.parse(body);
-    const session = await getServerSession(authOptions);
 
-    let userId: string;
-    if (session?.user?.id) {
-      userId = session.user.id;
-    } else {
-      let user = await prisma.user.findUnique({ where: { email: data.email } });
-      if (!user) {
-        user = await prisma.user.create({
-          data: { email: data.email, name: data.name },
-        });
-      }
-      userId = user.id;
-    }
+    const total = data.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
-    const address = await prisma.address.create({
+    const order = await prisma.order.create({
       data: {
-        userId,
-        name: data.name,
+        customerName: data.name,
+        customerEmail: data.email,
+        customerPhone: data.phone,
         street: data.street,
         number: data.number,
         complement: data.complement,
@@ -60,22 +48,8 @@ export async function POST(request: Request) {
         city: data.city,
         state: data.state,
         zipCode: data.zipCode,
-        phone: data.phone,
-      },
-    });
-
-    const subtotal = data.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    const order = await prisma.order.create({
-      data: {
-        userId,
-        addressId: address.id,
-        paymentMethod: data.paymentMethod,
-        subtotal,
-        total: subtotal,
+        paymentMethod: "PIX",
+        total,
         items: {
           create: data.items.map((item) => ({
             productId: item.productId,
@@ -83,6 +57,7 @@ export async function POST(request: Request) {
             name: item.name,
             image: item.image,
             size: item.size,
+            color: item.color,
             quantity: item.quantity,
             price: item.price,
           })),
@@ -103,8 +78,8 @@ export async function POST(request: Request) {
     sendOrderWhatsApp({
       id: order.id,
       customerName: data.name,
-      total: subtotal,
-      paymentMethod: data.paymentMethod,
+      total,
+      paymentMethod: "PIX",
       itemCount: data.items.reduce((s, i) => s + i.quantity, 0),
     }).catch(console.error);
 
@@ -116,18 +91,4 @@ export async function POST(request: Request) {
     console.error(error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
-}
-
-export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
-
-  const orders = await prisma.order.findMany({
-    include: { user: true, items: true, address: true },
-    orderBy: { createdAt: "desc" },
-  });
-
-  return NextResponse.json(orders);
 }

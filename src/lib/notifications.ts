@@ -82,18 +82,12 @@ export async function sendOrderWhatsApp(order: {
 
   if (!instanceId || !token || !phone) return;
 
-  const methodLabel: Record<string, string> = {
-    PIX: "PIX",
-    CREDIT_CARD: "Cartão de Crédito",
-    BOLETO: "Boleto",
-  };
-
   const message =
     `🛍️ *Novo Pedido ASTRO*\n\n` +
     `📋 Pedido: #${order.id.slice(-8).toUpperCase()}\n` +
     `👤 Cliente: ${order.customerName}\n` +
     `💰 Total: R$ ${order.total.toFixed(2).replace(".", ",")}\n` +
-    `💳 Pagamento: ${methodLabel[order.paymentMethod] ?? order.paymentMethod}\n` +
+    `💳 Pagamento: PIX\n` +
     `📦 Itens: ${order.itemCount}`;
 
   await fetch(
@@ -103,5 +97,5 @@ export async function sendOrderWhatsApp(order: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone, message }),
     }
-  ).catch(() => {}); // não bloqueia o fluxo se WA falhar
+  ).catch(() => {});
 }

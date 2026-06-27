@@ -20,34 +20,22 @@ const checkoutSchema = z.object({
   district: z.string().min(2, "Bairro obrigatório"),
   city: z.string().min(2, "Cidade obrigatória"),
   state: z.string().min(2, "Estado obrigatório"),
-  paymentMethod: z.enum(["PIX", "CREDIT_CARD", "BOLETO"]),
 });
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;
-type Step = "form" | "pix" | "boleto" | "success";
+type Step = "form" | "pix" | "success";
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const cartTotal = total();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<Step>("form");
-  const [pixData, setPixData] = useState<{ code: string; qrCodeUrl: string } | null>(null);
-  const [boletoData, setBoletoData] = useState<{ url: string; barcode: string } | null>(null);
+  const [pixData, setPixData] = useState<{ code: string; qrCodeBase64?: string } | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [cardData, setCardData] = useState({
-    number: "",
-    holderName: "",
-    expiryMonth: "",
-    expiryYear: "",
-    cvv: "",
-  });
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<CheckoutForm>({
+  const { register, handleSubmit, formState: { errors } } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { paymentMethod: "PIX" },
   });
-
-  const paymentMethod = watch("paymentMethod");
 
   const onSubmit = async (data: CheckoutForm) => {
     setLoading(true);
@@ -55,35 +43,23 @@ export default function CheckoutPage() {
       const orderRes = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, items }),
+        body: JSON.stringify({ ...data, paymentMethod: "PIX", items }),
       });
       if (!orderRes.ok) throw new Error("Erro ao criar pedido");
       const { orderId: oid } = await orderRes.json();
       setOrderId(oid);
 
-      const paymentRes = await fetch("/api/payments/pagarme", {
+      const paymentRes = await fetch("/api/payments/pix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId: oid,
-          paymentMethod: data.paymentMethod,
-          ...(data.paymentMethod === "CREDIT_CARD" && { card: cardData }),
-        }),
+        body: JSON.stringify({ orderId: oid, amount: cartTotal, name: data.name, email: data.email }),
       });
-      if (!paymentRes.ok) throw new Error("Erro ao processar pagamento");
+      if (!paymentRes.ok) throw new Error("Erro ao gerar PIX");
       const payment = await paymentRes.json();
 
       clearCart();
-
-      if (data.paymentMethod === "PIX") {
-        setPixData({ code: payment.pixCode, qrCodeUrl: payment.pixQrCodeUrl });
-        setStep("pix");
-      } else if (data.paymentMethod === "BOLETO") {
-        setBoletoData({ url: payment.boletoUrl, barcode: payment.boletoBarcode });
-        setStep("boleto");
-      } else {
-        setStep("success");
-      }
+      setPixData({ code: payment.pixCode, qrCodeBase64: payment.qrCodeBase64 });
+      setStep("pix");
     } catch (e) {
       console.error(e);
       alert("Erro ao processar o pedido. Tente novamente.");
@@ -98,11 +74,19 @@ export default function CheckoutPage() {
         <div className="text-center max-w-md px-6">
           <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-2">Pagamento via</p>
           <h1 className="font-display text-4xl tracking-wide mb-8">PIX</h1>
-          {pixData.qrCodeUrl && (
+
+          {pixData.qrCodeBase64 && (
             <div className="border border-border p-4 inline-block mb-6">
-              <Image src={pixData.qrCodeUrl} alt="QR Code PIX" width={200} height={200} unoptimized />
+              <Image
+                src={`data:image/png;base64,${pixData.qrCodeBase64}`}
+                alt="QR Code PIX"
+                width={200}
+                height={200}
+                unoptimized
+              />
             </div>
           )}
+
           <p className="text-sm text-muted-foreground mb-3">Ou copie o código abaixo:</p>
           <div className="border border-border p-3 text-xs break-all text-left mb-4 font-mono bg-secondary">
             {pixData.code}
@@ -126,41 +110,6 @@ export default function CheckoutPage() {
     );
   }
 
-  if (step === "boleto" && boletoData) {
-    return (
-      <div className="pt-20 min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md px-6">
-          <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-2">Pagamento via</p>
-          <h1 className="font-display text-4xl tracking-wide mb-8">Boleto</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            Pague em qualquer banco, lotérica ou pelo app do seu banco. Vencimento em 3 dias.
-          </p>
-          {boletoData.barcode && (
-            <div className="border border-border p-3 text-xs break-all text-left mb-4 font-mono bg-secondary">
-              {boletoData.barcode}
-            </div>
-          )}
-          <a
-            href={boletoData.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full bg-foreground text-background py-3 text-xs tracking-[0.2em] uppercase font-medium hover:opacity-90 transition-opacity mb-4 text-center"
-          >
-            Visualizar boleto
-          </a>
-          <p className="text-xs text-muted-foreground">
-            Confirmação em até 3 dias úteis após o pagamento.
-          </p>
-          {orderId && (
-            <p className="text-xs text-muted-foreground mt-3">
-              Pedido #{orderId.slice(-8).toUpperCase()}
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   if (step === "success") {
     return (
       <div className="pt-20 min-h-screen flex items-center justify-center">
@@ -172,7 +121,7 @@ export default function CheckoutPage() {
           </div>
           <h1 className="font-display text-4xl tracking-wide mb-4">Pedido realizado!</h1>
           <p className="text-muted-foreground mb-8">
-            Pagamento aprovado. Você receberá um email de confirmação em breve.
+            Pagamento confirmado. Você receberá um email em breve.
           </p>
           <Link href="/" className="text-sm underline underline-offset-4">Voltar para o início</Link>
         </div>
@@ -241,16 +190,19 @@ export default function CheckoutPage() {
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Estado *</label>
                       <input {...register("state")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="SP" maxLength={2} />
+                      {errors.state && <p className="text-xs text-red-500 mt-1">{errors.state.message}</p>}
                     </div>
                   </div>
                   <div>
                     <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Rua / Avenida *</label>
                     <input {...register("street")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="Nome da rua" />
+                    {errors.street && <p className="text-xs text-red-500 mt-1">{errors.street.message}</p>}
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Número *</label>
                       <input {...register("number")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="123" />
+                      {errors.number && <p className="text-xs text-red-500 mt-1">{errors.number.message}</p>}
                     </div>
                     <div className="col-span-2">
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Complemento</label>
@@ -261,10 +213,12 @@ export default function CheckoutPage() {
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Bairro *</label>
                       <input {...register("district")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="Seu bairro" />
+                      {errors.district && <p className="text-xs text-red-500 mt-1">{errors.district.message}</p>}
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Cidade *</label>
                       <input {...register("city")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="Sua cidade" />
+                      {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city.message}</p>}
                     </div>
                   </div>
                 </div>
@@ -275,52 +229,10 @@ export default function CheckoutPage() {
                 <h2 className="text-xs tracking-[0.2em] uppercase font-medium mb-5 pb-3 border-b border-border">
                   Forma de Pagamento
                 </h2>
-                <div className="grid grid-cols-3 gap-3 mb-5">
-                  {[
-                    { value: "PIX", label: "Pix", desc: "Aprovação imediata" },
-                    { value: "CREDIT_CARD", label: "Cartão", desc: "Crédito ou débito" },
-                    { value: "BOLETO", label: "Boleto", desc: "Vence em 3 dias" },
-                  ].map((m) => (
-                    <label
-                      key={m.value}
-                      className={`border p-4 cursor-pointer transition-colors ${
-                        paymentMethod === m.value ? "border-foreground bg-foreground/5" : "border-border hover:border-foreground/50"
-                      }`}
-                    >
-                      <input {...register("paymentMethod")} type="radio" value={m.value} className="sr-only" />
-                      <p className="text-sm font-medium mb-0.5">{m.label}</p>
-                      <p className="text-xs text-muted-foreground">{m.desc}</p>
-                    </label>
-                  ))}
+                <div className="border border-foreground bg-foreground/5 p-4">
+                  <p className="text-sm font-medium mb-0.5">PIX</p>
+                  <p className="text-xs text-muted-foreground">Aprovação imediata — QR Code gerado após confirmação</p>
                 </div>
-
-                {paymentMethod === "CREDIT_CARD" && (
-                  <div className="border border-border p-4 space-y-3">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">Dados do Cartão</p>
-                    <div>
-                      <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Número</label>
-                      <input value={cardData.number} onChange={(e) => setCardData((p) => ({ ...p, number: e.target.value }))} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="0000 0000 0000 0000" maxLength={19} />
-                    </div>
-                    <div>
-                      <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Nome no cartão</label>
-                      <input value={cardData.holderName} onChange={(e) => setCardData((p) => ({ ...p, holderName: e.target.value }))} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="Como está no cartão" />
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Mês</label>
-                        <input value={cardData.expiryMonth} onChange={(e) => setCardData((p) => ({ ...p, expiryMonth: e.target.value }))} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="MM" maxLength={2} />
-                      </div>
-                      <div>
-                        <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Ano</label>
-                        <input value={cardData.expiryYear} onChange={(e) => setCardData((p) => ({ ...p, expiryYear: e.target.value }))} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="AA" maxLength={2} />
-                      </div>
-                      <div>
-                        <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">CVV</label>
-                        <input value={cardData.cvv} onChange={(e) => setCardData((p) => ({ ...p, cvv: e.target.value }))} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="000" maxLength={4} />
-                      </div>
-                    </div>
-                  </div>
-                )}
               </section>
             </div>
 
@@ -357,10 +269,16 @@ export default function CheckoutPage() {
                     <span>{formatPrice(cartTotal)}</span>
                   </div>
                 </div>
-                <button type="submit" disabled={loading} className="w-full bg-foreground text-background py-4 text-xs tracking-[0.2em] uppercase font-medium hover:opacity-90 transition-opacity disabled:opacity-50 btn-press">
-                  {loading ? "Processando..." : "Confirmar Pedido"}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-foreground text-background py-4 text-xs tracking-[0.2em] uppercase font-medium hover:opacity-90 transition-opacity disabled:opacity-50 btn-press"
+                >
+                  {loading ? "Processando..." : "Gerar PIX"}
                 </button>
-                <p className="text-[11px] text-muted-foreground text-center mt-3">Seus dados estão seguros e protegidos</p>
+                <p className="text-[11px] text-muted-foreground text-center mt-3">
+                  Seus dados estão seguros e protegidos
+                </p>
               </div>
             </div>
           </div>
