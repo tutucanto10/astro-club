@@ -32,7 +32,7 @@ async function getAccessToken(): Promise<string> {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: params.toString(),
-    // @ts-ignore — Node.js agent for mTLS
+    // @ts-expect-error — Node.js fetch accepts agent for mTLS, not in TS types
     agent,
   });
 
@@ -76,7 +76,7 @@ export async function createPixCharge(params: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
-    // @ts-ignore
+    // @ts-expect-error — Node.js fetch accepts agent for mTLS, not in TS types
     agent,
   });
 
@@ -94,7 +94,7 @@ export async function getPixQrCode(loc: string): Promise<{ imagemQrcode: string;
 
   const res = await fetch(`${BASE_URL}/pix/v2/loc/${loc}/qrcode`, {
     headers: { Authorization: `Bearer ${token}` },
-    // @ts-ignore
+    // @ts-expect-error — Node.js fetch accepts agent for mTLS, not in TS types
     agent,
   });
 
@@ -117,7 +117,7 @@ export async function registerWebhook(pixKey: string, webhookUrl: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ webhookUrl }),
-    // @ts-ignore
+    // @ts-expect-error — Node.js fetch accepts agent for mTLS, not in TS types
     agent,
   });
 
