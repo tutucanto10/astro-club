@@ -70,7 +70,7 @@ export default async function ProductsPage({
       {/* Page header */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-14 border-b border-border">
         <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-2">
-          Coleção 2025
+          Coleção 2026
         </p>
         <div className="flex items-end justify-between">
           <h1 className="font-display text-5xl lg:text-6xl tracking-wide">

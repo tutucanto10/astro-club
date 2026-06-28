@@ -36,55 +36,60 @@ async function main() {
   });
 
   // ─── Camisa Astro Basic ───────────────────────────────────────────────
-  // 7 cores × 4 tamanhos = 28 variantes
-  const camisaExisting = await prisma.product.findUnique({ where: { slug: "camisa-astro-basic" } });
-  if (!camisaExisting) {
-    const camisaVariants = CAMISA_CORES.flatMap((color) =>
-      CAMISA_TAMANHOS.map((size) => ({ color, size, stock: 10 }))
-    );
+  const camisaVariants = CAMISA_CORES.flatMap((color) =>
+    CAMISA_TAMANHOS.map((size) => ({ color, size, stock: 10 }))
+  );
 
-    await prisma.product.create({
-      data: {
-        name: "Camisa Astro Basic",
-        slug: "camisa-astro-basic",
-        description: "Camisa oversized da ASTRO. Corte amplo, tecido premium 100% algodão. Logo ASTRO bordado no peito em cor contrastante. Disponível em 7 combinações exclusivas.",
-        price: 99.90,
-        categoryId: camisas.id,
-        featured: true,
-        active: true,
-        images: [
-          "https://i.ibb.co/1Gxtw530/IMG-1732.jpg",
-          "https://i.ibb.co/MyYbKXvG/IMG-1786.jpg",
-        ],
-        variants: { create: camisaVariants },
-      },
-    });
-    console.log("✅ Camisa Astro Basic — 28 variantes");
-  }
+  const camisa = await prisma.product.upsert({
+    where: { slug: "camisa-astro-basic" },
+    update: {
+      images: [
+        "https://i.ibb.co/1Gxtw530/IMG-1732.jpg",
+        "https://i.ibb.co/MyYbKXvG/IMG-1786.jpg",
+      ],
+    },
+    create: {
+      name: "Camisa Astro Basic",
+      slug: "camisa-astro-basic",
+      description: "Camisa oversized da ASTRO. Corte amplo, tecido premium 100% algodão. Logo ASTRO bordado no peito em cor contrastante. Disponível em 7 combinações exclusivas.",
+      price: 99.90,
+      categoryId: camisas.id,
+      featured: true,
+      active: true,
+      images: [
+        "https://i.ibb.co/1Gxtw530/IMG-1732.jpg",
+        "https://i.ibb.co/MyYbKXvG/IMG-1786.jpg",
+      ],
+      variants: { create: camisaVariants },
+    },
+  });
+  console.log("✅ Camisa Astro Basic");
 
   // ─── Cinto Astro ─────────────────────────────────────────────────────
-  // 3 variantes
-  const cintoExisting = await prisma.product.findUnique({ where: { slug: "cinto-astro" } });
-  if (!cintoExisting) {
-    const cintoVariants = CINTO_CORES.map((color) => ({ color, size: "Único", stock: 10 }));
+  const cintoVariants = CINTO_CORES.map((color) => ({ color, size: "Único", stock: 10 }));
 
-    await prisma.product.create({
-      data: {
-        name: "Cinto Astro",
-        slug: "cinto-astro",
-        description: "Cinto com fivela metálica personalizada ASTRO. Acabamento premium. Disponível em 3 combinações.",
-        price: 49.90,
-        categoryId: cintos.id,
-        featured: true,
-        active: true,
-        images: [
-          "https://i.ibb.co/tTyqT21H/IMG-1689.jpg",
-        ],
-        variants: { create: cintoVariants },
-      },
-    });
-    console.log("✅ Cinto Astro — 3 variantes");
-  }
+  const cinto = await prisma.product.upsert({
+    where: { slug: "cinto-astro" },
+    update: {
+      images: [
+        "https://i.ibb.co/tTyqT21H/IMG-1689.jpg",
+      ],
+    },
+    create: {
+      name: "Cinto Astro",
+      slug: "cinto-astro",
+      description: "Cinto com fivela metálica personalizada ASTRO. Acabamento premium. Disponível em 3 combinações.",
+      price: 49.90,
+      categoryId: cintos.id,
+      featured: true,
+      active: true,
+      images: [
+        "https://i.ibb.co/tTyqT21H/IMG-1689.jpg",
+      ],
+      variants: { create: cintoVariants },
+    },
+  });
+  console.log("✅ Cinto Astro");
 
   console.log("🎉 Seed concluído!");
 }

@@ -2,6 +2,9 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product/ProductCard";
+import dynamic from "next/dynamic";
+
+const AstroLogo3D = dynamic(() => import("@/components/AstroLogo3D"), { ssr: false });
 
 export const dynamic = "force-dynamic";
 import { ArrowRight } from "lucide-react";
@@ -59,11 +62,11 @@ export default async function HomePage() {
 
         <div className="relative z-10 text-center px-6 animate-fade-in">
           <p className="text-background/40 text-xs tracking-[0.4em] uppercase mb-6">
-            Nova Coleção 2025
+            Nova Coleção 2026
           </p>
-          <h1 className="font-display text-[12vw] md:text-[8vw] lg:text-[7vw] text-background leading-none tracking-wider mb-8">
-            ASTRO
-          </h1>
+          <div className="mb-8">
+            <AstroLogo3D height={260} spinSpeed={0.012} />
+          </div>
           <p className="text-background/60 text-sm md:text-base tracking-wide max-w-md mx-auto mb-10 font-light">
             Streetwear premium para quem define a cultura.
             <br />
@@ -94,7 +97,7 @@ export default async function HomePage() {
                 key={i}
                 className="text-xs tracking-[0.3em] uppercase text-muted-foreground font-medium"
               >
-                Astro Studio &nbsp;·&nbsp; Streetwear Premium &nbsp;·&nbsp; Nova Coleção &nbsp;·&nbsp; 2025
+                Astro Studio &nbsp;·&nbsp; Streetwear Premium &nbsp;·&nbsp; Nova Coleção &nbsp;·&nbsp; 2026
               </span>
             ))}
         </div>

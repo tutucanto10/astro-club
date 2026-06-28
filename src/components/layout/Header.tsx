@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ShoppingBag, Menu, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useState, useEffect } from "react";
@@ -61,9 +62,16 @@ export function Header() {
 
             <Link
               href="/"
-              className="absolute left-1/2 -translate-x-1/2 font-display text-2xl lg:text-3xl tracking-[0.2em] hover:opacity-80 transition-opacity"
+              className="absolute left-1/2 -translate-x-1/2 hover:opacity-80 transition-opacity"
             >
-              ASTRO
+              <Image
+                src="/astro-logo.svg"
+                alt="ASTRO"
+                width={90}
+                height={32}
+                className="h-8 w-auto invert"
+                priority
+              />
             </Link>
 
             <div className="flex items-center gap-6">

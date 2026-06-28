@@ -18,7 +18,13 @@
       "Bash(git branch *)",
       "Bash(npx prisma *)",
       "Bash(dir c:\\\\astro /b)",
-      "WebFetch(domain:ibb.co)"
+      "WebFetch(domain:ibb.co)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\('next:', p.dependencies.next, 'eslint-config-next:', p.devDependencies['eslint-config-next']\\)\")",
+      "Bash(git -C c:/astro ls-files .env .env.local .env.production)",
+      "Bash(git -C c:/astro ls-files --error-unmatch .env)",
+      "Bash(git commit *)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(npx tsx *)"
     ]
   }
 }
