@@ -5,28 +5,28 @@ import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: {
-    default: "ASTRO — Streetwear Premium",
+    default: "ASTRO — Nas ruas, somos estrelas.",
     template: "%s | ASTRO",
   },
   description:
-    "ASTRO é uma marca de streetwear premium. Camisas oversized, bonés, cintos e anéis com identidade única.",
-  keywords: ["streetwear", "moda urbana", "astro", "oversized", "premium"],
-  authors: [{ name: "Astro Brand" }],
-  creator: "Astro Brand",
+    "ASTRO Club — nascida das ruas e para as ruas. Camisas oversized, bonés, cintos e anéis com identidade única.",
+  keywords: ["moda urbana", "astro", "astro club", "oversized", "underground"],
+  authors: [{ name: "Astro Club" }],
+  creator: "Astro Club",
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://astrobrand.com",
-    title: "ASTRO — Streetwear Premium",
+    url: "https://www.astroclub.world",
+    title: "ASTRO — Nas ruas, somos estrelas.",
     description:
-      "ASTRO é uma marca de streetwear premium. Camisas oversized, bonés, cintos e anéis com identidade única.",
+      "ASTRO Club — nascida das ruas e para as ruas. Camisas oversized, bonés, cintos e anéis com identidade única.",
     siteName: "ASTRO",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ASTRO — Streetwear Premium",
+    title: "ASTRO — Nas ruas, somos estrelas.",
     description:
-      "ASTRO é uma marca de streetwear premium. Camisas oversized, bonés, cintos e anéis com identidade única.",
+      "ASTRO Club — nascida das ruas e para as ruas. Camisas oversized, bonés, cintos e anéis com identidade única.",
   },
   robots: {
     index: true,

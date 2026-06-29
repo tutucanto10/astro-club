@@ -9,7 +9,7 @@ export function Footer() {
           <div className="md:col-span-1">
             <h2 className="font-display text-3xl tracking-[0.2em] mb-4">ASTRO</h2>
             <p className="text-sm text-background/60 leading-relaxed">
-              Streetwear premium para quem vive a cultura urbana.
+              Nascida das ruas e para as ruas.
             </p>
           </div>
 

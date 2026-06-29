@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "ASTRO — Streetwear Premium",
+  title: "ASTRO — Nas ruas, somos estrelas.",
 };
 
 async function getFeaturedProducts() {
@@ -90,7 +90,7 @@ export default async function HomePage() {
                 key={i}
                 className="text-xs tracking-[0.3em] uppercase text-muted-foreground font-medium"
               >
-                Astro Studio &nbsp;·&nbsp; Streetwear Premium &nbsp;·&nbsp; Nova Coleção &nbsp;·&nbsp; 2026
+                Astro Club &nbsp;·&nbsp; Nas ruas, somos estrelas. &nbsp;·&nbsp; Nova Coleção &nbsp;·&nbsp; 2026
               </span>
             ))}
         </div>
