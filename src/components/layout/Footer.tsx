@@ -90,7 +90,7 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-6">
             <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/astroclub.world/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs tracking-[0.1em] uppercase text-background/40 hover:text-background transition-colors"
