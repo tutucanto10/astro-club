@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product/ProductCard";
 import AstroLogo3DClient from "@/components/AstroLogo3DClient";
@@ -158,12 +159,14 @@ export default async function HomePage() {
             </button>
           </Link>
         </div>
-        <div className="bg-secondary min-h-[50vh] lg:min-h-0 relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-display text-[20vw] lg:text-[12vw] text-foreground/5 select-none">
-              A
-            </span>
-          </div>
+        <div className="min-h-[50vh] lg:min-h-0 relative overflow-hidden">
+          <Image
+            src="https://i.ibb.co/7N6r8YPT/Whats-App-Image-2026-06-27-at-17-59-52.jpg"
+            alt="Astro Club"
+            fill
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+          />
         </div>
       </section>
 
