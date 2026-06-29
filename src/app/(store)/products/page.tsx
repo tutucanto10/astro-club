@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductFilters } from "@/components/product/ProductFilters";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Shop — Todos os Produtos",
 };
@@ -111,7 +113,14 @@ export default async function ProductsPage({
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
                 {products.map((product) => (
-                  <ProductCard key={product.id} product={product as any} />
+                  <ProductCard
+                    key={product.id}
+                    product={{
+                      ...product,
+                      price: Number(product.price),
+                      comparePrice: product.comparePrice ? Number(product.comparePrice) : undefined,
+                    }}
+                  />
                 ))}
               </div>
             )}

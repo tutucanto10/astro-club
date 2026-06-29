@@ -72,7 +72,7 @@ async function main() {
     where: { slug: "cinto-astro" },
     update: {
       images: [
-        "https://i.ibb.co/tTyqT21H/IMG-1689.jpg",
+        "https://i.ibb.co/VfvZx4Y/IMG-1786.jpg",
       ],
     },
     create: {
@@ -84,7 +84,7 @@ async function main() {
       featured: true,
       active: true,
       images: [
-        "https://i.ibb.co/tTyqT21H/IMG-1689.jpg",
+        "https://i.ibb.co/VfvZx4Y/IMG-1786.jpg",
       ],
       variants: { create: cintoVariants },
     },

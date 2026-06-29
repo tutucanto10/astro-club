@@ -24,7 +24,15 @@
       "Bash(git -C c:/astro ls-files --error-unmatch .env)",
       "Bash(git commit *)",
       "Bash(taskkill /F /IM node.exe)",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(xargs grep -l \"persist\\\\|localStorage\\\\|zustand\")",
+      "Bash(npx tsc *)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://i.ibb.co/1Gxtw530/IMG-1732.jpg\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://i.ibb.co/tTyqT21H/IMG-1689.jpg\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"https://i.ibb.co/MyYbKXvG/IMG-1786.jpg\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:3005/\")",
+      "Bash(curl -s \"https://ibb.co/CRnZ6GK\")"
     ]
   }
 }

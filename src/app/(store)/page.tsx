@@ -2,9 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product/ProductCard";
-import dynamic from "next/dynamic";
-
-const AstroLogo3D = dynamic(() => import("@/components/AstroLogo3D"), { ssr: false });
+import AstroLogo3DClient from "@/components/AstroLogo3DClient";
 
 export const dynamic = "force-dynamic";
 import { ArrowRight } from "lucide-react";
@@ -61,16 +59,11 @@ export default async function HomePage() {
         </div>
 
         <div className="relative z-10 text-center px-6 animate-fade-in">
-          <p className="text-background/40 text-xs tracking-[0.4em] uppercase mb-6">
-            Nova Coleção 2026
-          </p>
-          <div className="mb-8">
-            <AstroLogo3D height={260} spinSpeed={0.012} />
+          <div className="mb-6">
+            <AstroLogo3DClient />
           </div>
-          <p className="text-background/60 text-sm md:text-base tracking-wide max-w-md mx-auto mb-10 font-light">
-            Streetwear premium para quem define a cultura.
-            <br />
-            Cada peça é uma declaração.
+          <p className="text-background/70 text-sm md:text-base tracking-widest mb-8 font-light">
+            Nas ruas, somos estrelas.
           </p>
           <Link href="/products">
             <button className="border border-background/30 text-background px-10 py-4 text-xs tracking-[0.2em] uppercase font-medium hover:bg-background hover:text-foreground transition-all duration-300 btn-press">

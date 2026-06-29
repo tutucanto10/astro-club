@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { ShoppingBag, Menu, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useState, useEffect } from "react";
@@ -9,9 +10,11 @@ import { cn } from "@/lib/utils";
 
 export function Header() {
   const { itemCount, toggleCart } = useCart();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const count = itemCount();
+  const logoNeedsInvert = !scrolled && pathname === "/";
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -69,7 +72,7 @@ export function Header() {
                 alt="ASTRO"
                 width={90}
                 height={32}
-                className="h-8 w-auto invert"
+                className={cn("h-8 w-auto", logoNeedsInvert ? "invert" : "")}
                 priority
               />
             </Link>

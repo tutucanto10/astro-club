@@ -1,5 +1,25 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
+
+const safeStorage = createJSONStorage(() => ({
+  getItem(name: string) {
+    try {
+      return localStorage.getItem(name) ?? null;
+    } catch {
+      return null;
+    }
+  },
+  setItem(name: string, value: string) {
+    try {
+      localStorage.setItem(name, value);
+    } catch {}
+  },
+  removeItem(name: string) {
+    try {
+      localStorage.removeItem(name);
+    } catch {}
+  },
+}));
 
 export interface CartItem {
   id: string;
@@ -78,6 +98,7 @@ export const useCart = create<CartStore>()(
     }),
     {
       name: "astro-cart",
+      storage: safeStorage,
     }
   )
 );
