@@ -25,6 +25,10 @@ const checkoutSchema = z.object({
 type CheckoutForm = z.infer<typeof checkoutSchema>;
 type Step = "form" | "pix" | "success";
 
+const COUPONS: Record<string, number> = {
+  ASTROFEST: 0.10,
+};
+
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const cartTotal = total();
@@ -32,6 +36,25 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>("form");
   const [pixData, setPixData] = useState<{ code: string; qrCodeBase64?: string } | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [couponError, setCouponError] = useState("");
+
+  const discountAmount = appliedCoupon ? cartTotal * appliedCoupon.discount : 0;
+  const finalTotal = cartTotal - discountAmount;
+
+  const applyCoupon = () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    const discount = COUPONS[code];
+    if (discount) {
+      setAppliedCoupon({ code, discount });
+      setCouponError("");
+    } else {
+      setAppliedCoupon(null);
+      setCouponError("Cupom inválido");
+    }
+  };
 
   const { register, handleSubmit, formState: { errors } } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
@@ -52,7 +75,7 @@ export default function CheckoutPage() {
       const paymentRes = await fetch("/api/payments/pix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: oid, amount: cartTotal, name: data.name, email: data.email }),
+        body: JSON.stringify({ orderId: oid, amount: finalTotal, name: data.name, email: data.email }),
       });
       if (!paymentRes.ok) throw new Error("Erro ao gerar PIX");
       const payment = await paymentRes.json();
@@ -255,18 +278,61 @@ export default function CheckoutPage() {
                     </div>
                   ))}
                 </div>
+                {/* Cupom */}
+                <div className="mb-4">
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between bg-foreground/5 border border-foreground/20 px-3 py-2">
+                      <span className="text-xs font-medium tracking-wider">{appliedCoupon.code} — {appliedCoupon.discount * 100}% OFF</span>
+                      <button
+                        type="button"
+                        onClick={() => { setAppliedCoupon(null); setCouponInput(""); }}
+                        className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponInput}
+                          onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }}
+                          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyCoupon())}
+                          placeholder="Cupom de desconto"
+                          className="flex-1 border border-border px-3 py-2 text-xs uppercase tracking-wider focus:outline-none focus:border-foreground bg-background"
+                        />
+                        <button
+                          type="button"
+                          onClick={applyCoupon}
+                          className="border border-border px-3 py-2 text-xs tracking-wider uppercase hover:bg-foreground hover:text-background transition-colors"
+                        >
+                          Aplicar
+                        </button>
+                      </div>
+                      {couponError && <p className="text-xs text-red-500 mt-1">{couponError}</p>}
+                    </div>
+                  )}
+                </div>
+
                 <div className="border-t border-border pt-4 space-y-2 mb-6">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
                     <span>{formatPrice(cartTotal)}</span>
                   </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Desconto ({appliedCoupon.code})</span>
+                      <span>− {formatPrice(discountAmount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Frete</span>
                     <span className="text-muted-foreground">A calcular</span>
                   </div>
                   <div className="flex justify-between font-medium pt-2 border-t border-border">
                     <span>Total</span>
-                    <span>{formatPrice(cartTotal)}</span>
+                    <span>{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
                 <button
