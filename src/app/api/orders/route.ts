@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendOrderWhatsApp } from "@/lib/notifications";
+import { sendOrderWhatsApp, sendNewOrderAlert } from "@/lib/notifications";
 import { z } from "zod";
 
 const orderSchema = z.object({
@@ -81,6 +81,15 @@ export async function POST(request: Request) {
       total,
       paymentMethod: "PIX",
       itemCount: data.items.reduce((s, i) => s + i.quantity, 0),
+    }).catch(console.error);
+
+    sendNewOrderAlert({
+      id: order.id,
+      customerName: data.name,
+      customerEmail: data.email,
+      customerPhone: data.phone,
+      total,
+      items: data.items,
     }).catch(console.error);
 
     return NextResponse.json({ orderId: order.id }, { status: 201 });
