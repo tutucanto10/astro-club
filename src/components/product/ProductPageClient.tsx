@@ -27,20 +27,58 @@ interface Product {
   category: { name: string; slug: string };
 }
 
-// primary = cor da peça / secondary = cor da logo ou detalhe
 const COLOR_MAP: Record<string, { primary: string; secondary: string }> = {
-  // Camisa Astro Basic
-  "Marrom / Azul Claro":     { primary: "#7C4A2B", secondary: "#87CEEB" },
-  "Azul Escuro / Amarelo":   { primary: "#1B2A6B", secondary: "#FFD700" },
-  "Grená / Dourado":         { primary: "#722F37", secondary: "#C5A028" },
-  "Verde / Bege":            { primary: "#3B5323", secondary: "#D4B896" },
-  "Bege / Verde":            { primary: "#C8A882", secondary: "#3B5323" },
-  "Branco / Vermelho":       { primary: "#F0F0F0", secondary: "#DC2626" },
-  "Preto / Vermelho":        { primary: "#111111", secondary: "#DC2626" },
-  // Cinto Astro
-  "Preto / Fivela Vermelha": { primary: "#111111", secondary: "#DC2626" },
-  "Preto / Fivela Prata":    { primary: "#111111", secondary: "#C0C0C0" },
-  "Rosa / Fivela Preta":     { primary: "#F4A7B9", secondary: "#111111" },
+  "azul e amarelo":   { primary: "#1B2A6B", secondary: "#FFD700" },
+  "bege e verde":     { primary: "#C8A882", secondary: "#3B5323" },
+  "preto e vermelho": { primary: "#111111", secondary: "#DC2626" },
+  "verde e bege":     { primary: "#3B5323", secondary: "#D4B896" },
+  "preto":            { primary: "#111111", secondary: "#333333" },
+  "rosa":             { primary: "#F4A7B9", secondary: "#e08090" },
+};
+
+const COLOR_IMAGES: Record<string, Record<string, string[]>> = {
+  "camisa-astro-basic": {
+    "azul e amarelo": [
+      "/camisas basic/azul e amarelo/IMG_2773.jpeg",
+      "/camisas basic/azul e amarelo/IMG_2774.jpeg",
+      "/camisas basic/azul e amarelo/IMG_2808.jpeg",
+      "/camisas basic/azul e amarelo/IMG_2824.jpeg",
+    ],
+    "bege e verde": [
+      "/camisas basic/bege e verde/IMG_2691.jpeg",
+      "/camisas basic/bege e verde/IMG_2695.jpeg",
+      "/camisas basic/bege e verde/IMG_2708.jpeg",
+      "/camisas basic/bege e verde/IMG_2767.jpeg",
+    ],
+    "preto e vermelho": [
+      "/camisas basic/preto e vermelho/IMG_2482.jpeg",
+      "/camisas basic/preto e vermelho/IMG_2502.jpeg",
+      "/camisas basic/preto e vermelho/IMG_2509 copy.jpeg",
+      "/camisas basic/preto e vermelho/IMG_2633.jpeg",
+    ],
+    "verde e bege": [
+      "/camisas basic/verde e bege/IMG_2434.jpeg",
+      "/camisas basic/verde e bege/IMG_2448.jpeg",
+      "/camisas basic/verde e bege/IMG_2462.jpeg",
+      "/camisas basic/verde e bege/IMG_2465.jpeg",
+    ],
+  },
+  "cinto-astro": {
+    "preto": [
+      "/cinto/preto/IMG_2883.jpeg",
+      "/cinto/preto/IMG_2892.jpeg",
+      "/cinto/preto/IMG_2904.jpeg",
+      "/cinto/preto/IMG_2913.jpeg",
+      "/cinto/preto/IMG_2918.jpeg",
+    ],
+    "rosa": [
+      "/cinto/rosa/IMG_2837.jpeg",
+      "/cinto/rosa/IMG_2841.jpeg",
+      "/cinto/rosa/IMG_2858.jpeg",
+      "/cinto/rosa/IMG_2863.jpeg",
+      "/cinto/rosa/IMG_2871.jpeg",
+    ],
+  },
 };
 
 export function ProductPageClient({ product }: { product: Product }) {
@@ -50,16 +88,22 @@ export function ProductPageClient({ product }: { product: Product }) {
   const hasColors = colors.length > 0;
   const hasSizes  = sizes.length > 0;
 
-  const [selectedColor, setSelectedColor] = useState<string | null>(
-    colors.length === 1 ? colors[0] : null
-  );
-  const [selectedSize, setSelectedSize] = useState<string | null>(
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize]   = useState<string | null>(
     sizes.length === 1 ? sizes[0] : null
   );
-  const [quantity, setQuantity]   = useState(1);
+  const [quantity, setQuantity]     = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const { addItem, toggleCart } = useCart();
   const { toast } = useToast();
+
+  // Fotos: usa a cor selecionada; se nenhuma selecionada, usa a primeira cor disponível
+  const colorImagesMap = COLOR_IMAGES[product.slug] ?? {};
+  const defaultColor   = colors[0] ?? null;
+  const imageColor     = selectedColor ?? defaultColor;
+  const displayImages  = (imageColor && colorImagesMap[imageColor])
+    ? colorImagesMap[imageColor]
+    : product.images;
 
   const selectedVariant = product.variants.find((v) => {
     const colorMatch = !hasColors || v.color === selectedColor;
@@ -68,10 +112,7 @@ export function ProductPageClient({ product }: { product: Product }) {
   }) ?? null;
 
   const availableSizes = selectedColor
-    ? sizes.filter((s) => {
-        const v = product.variants.find((v) => v.color === selectedColor && v.size === s);
-        return v !== undefined;
-      })
+    ? sizes.filter((s) => product.variants.find((v) => v.color === selectedColor && v.size === s))
     : sizes;
 
   const stock = selectedVariant?.stock ?? 0;
@@ -93,7 +134,7 @@ export function ProductPageClient({ product }: { product: Product }) {
       productId: product.id,
       variantId: selectedVariant.id,
       name: product.name,
-      image: product.images[0] || "",
+      image: displayImages[0] || product.images[0] || "",
       price: parseFloat(product.price),
       size: selectedVariant.size || undefined,
       color: selectedVariant.color || undefined,
@@ -105,6 +146,8 @@ export function ProductPageClient({ product }: { product: Product }) {
     toggleCart();
   };
 
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
   return (
     <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20">
@@ -112,14 +155,15 @@ export function ProductPageClient({ product }: { product: Product }) {
         {/* Gallery */}
         <div className="space-y-3">
           <div className="relative aspect-square bg-secondary overflow-hidden">
-            {product.images[activeImage] ? (
+            {displayImages[activeImage] ? (
               <Image
-                src={product.images[activeImage]}
+                src={displayImages[activeImage]}
                 alt={product.name}
                 fill
                 className="object-cover"
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
+                unoptimized
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -128,9 +172,9 @@ export function ProductPageClient({ product }: { product: Product }) {
             )}
           </div>
 
-          {product.images.length > 1 && (
+          {displayImages.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
-              {product.images.map((img, i) => (
+              {displayImages.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImage(i)}
@@ -138,7 +182,7 @@ export function ProductPageClient({ product }: { product: Product }) {
                     activeImage === i ? "border-foreground" : "border-transparent hover:border-border"
                   }`}
                 >
-                  <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-cover" sizes="10vw" />
+                  <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-cover" sizes="10vw" unoptimized />
                 </button>
               ))}
             </div>
@@ -174,8 +218,10 @@ export function ProductPageClient({ product }: { product: Product }) {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs tracking-[0.15em] uppercase font-medium">Cor</h3>
-                {selectedColor && (
-                  <span className="text-xs text-muted-foreground">{selectedColor}</span>
+                {selectedColor ? (
+                  <span className="text-xs text-muted-foreground">{capitalize(selectedColor)}</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground/50">Selecione uma cor</span>
                 )}
               </div>
               <div className="flex gap-3">
@@ -188,8 +234,9 @@ export function ProductPageClient({ product }: { product: Product }) {
                       onClick={() => {
                         setSelectedColor(color);
                         setSelectedSize(null);
+                        setActiveImage(0);
                       }}
-                      title={color}
+                      title={capitalize(color)}
                       className={`w-9 h-9 rounded-full transition-all overflow-hidden ${
                         isSelected
                           ? "ring-2 ring-offset-2 ring-foreground scale-110"
