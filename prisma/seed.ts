@@ -26,7 +26,7 @@ async function main() {
   const camisa = await prisma.product.upsert({
     where: { slug: "camisa-astro-basic" },
     update: {
-      images: ["/camisas basic/azul e amarelo/IMG_2773.jpeg"],
+      images: ["/camisas%20basic/azul%20e%20amarelo/IMG_2773.jpeg"],
     },
     create: {
       name: "Camisa Astro Basic",
@@ -36,7 +36,7 @@ async function main() {
       categoryId: camisas.id,
       featured: true,
       active: true,
-      images: ["/camisas basic/azul e amarelo/IMG_2773.jpeg"],
+      images: ["/camisas%20basic/azul%20e%20amarelo/IMG_2773.jpeg"],
     },
   });
 
