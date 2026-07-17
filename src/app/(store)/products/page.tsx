@@ -100,15 +100,21 @@ export default async function ProductsPage({
 
           {/* Products Grid */}
           <div className="flex-1">
-            {products.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <span className="font-display text-6xl text-foreground/10 mb-4">
-                  0
-                </span>
-                <p className="font-medium mb-2">Nenhum produto encontrado</p>
-                <p className="text-sm text-muted-foreground">
-                  Tente ajustar seus filtros
+            {(activeCategory === "bones" || activeCategory === "aneis") ? (
+              <div className="flex flex-col items-center justify-center py-32 text-center">
+                <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-4">
+                  {activeCategory === "bones" ? "Bonés" : "Anéis"}
                 </p>
+                <h2 className="font-display text-5xl lg:text-6xl tracking-wide mb-6">Em Breve</h2>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Estamos preparando algo especial. Fique de olho nas novidades.
+                </p>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <span className="font-display text-6xl text-foreground/10 mb-4">0</span>
+                <p className="font-medium mb-2">Nenhum produto encontrado</p>
+                <p className="text-sm text-muted-foreground">Tente ajustar seus filtros</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
