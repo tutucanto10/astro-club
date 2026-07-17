@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product/ProductCard";
 import AstroLogo3DClient from "@/components/AstroLogo3DClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // revalida a cada 5 minutos
 import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
