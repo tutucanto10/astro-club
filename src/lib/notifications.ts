@@ -77,7 +77,7 @@ export async function sendNewOrderAlert(order: {
   total: number;
   items: Array<{ name: string; quantity: number; size?: string | null; color?: string | null; price: number }>;
 }) {
-  const storeEmail = process.env.STORE_ALERT_EMAIL ?? "a.canto@dommainc.com.br";
+  const storeEmail = process.env.STORE_ALERT_EMAIL ?? "astrosuporte5@gmail.com";
 
   const rows = order.items
     .map(

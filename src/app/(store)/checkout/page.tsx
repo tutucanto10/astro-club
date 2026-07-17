@@ -188,6 +188,7 @@ export default function CheckoutPage() {
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Email *</label>
                       <input {...register("email")} type="email" className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="seu@email.com" />
                       {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+                      <p className="text-[11px] text-muted-foreground mt-1">Você receberá atualizações do pedido neste email</p>
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Telefone *</label>
