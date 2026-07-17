@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createPixCharge, getPixQrCode } from "@/lib/inter";
+import { mpPayment } from "@/lib/mercadopago";
 import { z } from "zod";
 
 const schema = z.object({
@@ -15,36 +15,49 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { orderId, amount, name, email } = schema.parse(body);
 
-    // txid: 26-35 chars alphanumeric, use orderId stripped
-    const txid = orderId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 35).padStart(26, "0");
+    const nameParts = name.trim().split(" ");
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(" ") || nameParts[0];
 
-    const charge = await createPixCharge({ txid, amount, name, email });
-    const locId = charge.loc?.id;
+    const response = await mpPayment.create({
+      body: {
+        transaction_amount: amount,
+        description: `Pedido ASTRO #${orderId.slice(-8).toUpperCase()}`,
+        payment_method_id: "pix",
+        payer: {
+          email,
+          first_name: firstName,
+          last_name: lastName,
+        },
+        external_reference: orderId,
+        notification_url: `${process.env.NEXT_PUBLIC_URL}/api/webhooks/mercadopago`,
+      },
+      requestOptions: { idempotencyKey: orderId },
+    });
 
-    if (!locId) {
-      throw new Error("Inter não retornou loc.id");
+    const pixCode = response.point_of_interaction?.transaction_data?.qr_code;
+    const qrCodeBase64 = response.point_of_interaction?.transaction_data?.qr_code_base64;
+    const paymentId = response.id?.toString();
+
+    if (!pixCode) {
+      throw new Error("Mercado Pago não retornou o código PIX");
     }
-
-    const qrcode = await getPixQrCode(locId);
 
     await prisma.order.update({
       where: { id: orderId },
       data: {
-        paymentId: txid,
-        pixCode: qrcode.qrcode,
-        pixQrCodeBase64: qrcode.imagemQrcode,
+        paymentId,
+        pixCode,
+        pixQrCodeBase64: qrCodeBase64 ?? null,
       },
     });
 
-    return NextResponse.json({
-      pixCode: qrcode.qrcode,
-      qrCodeBase64: qrcode.imagemQrcode,
-    });
+    return NextResponse.json({ pixCode, qrCodeBase64 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
-    console.error(error);
+    console.error("[PIX]", error);
     return NextResponse.json({ error: "Erro ao gerar PIX" }, { status: 500 });
   }
 }
