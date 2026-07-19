@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { mpPayment } from "@/lib/mercadopago";
-import { sendOrderConfirmedEmail } from "@/lib/notifications";
+import { sendOrderReceivedEmail } from "@/lib/notifications";
 
 export async function POST(request: Request) {
   try {
@@ -20,11 +20,12 @@ export async function POST(request: Request) {
         include: { items: true },
       });
 
-      sendOrderConfirmedEmail({
+      sendOrderReceivedEmail({
         id: order.id,
         customerName: order.customerName,
         customerEmail: order.customerEmail,
         total: Number(order.total),
+        pixKey: "",
         items: order.items.map((i) => ({
           name: i.name,
           quantity: i.quantity,

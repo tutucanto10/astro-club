@@ -88,6 +88,13 @@ export async function POST(request: Request) {
       customerName: data.name,
       customerEmail: data.email,
       customerPhone: data.phone,
+      street: data.street,
+      number: data.number,
+      complement: data.complement,
+      district: data.district,
+      city: data.city,
+      state: data.state,
+      zipCode: data.zipCode,
       total,
       items: data.items,
     }).catch(console.error);

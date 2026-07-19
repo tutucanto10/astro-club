@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendOrderConfirmedEmail } from "@/lib/notifications";
+import { sendOrderShippedEmail } from "@/lib/notifications";
 
 // Inter PIX webhook — payload: { pix: [{ txid, valor, horario }] }
 export async function POST(request: Request) {
@@ -23,16 +23,10 @@ export async function POST(request: Request) {
         data: { paymentStatus: "PAID", status: "CONFIRMED" },
       });
 
-      sendOrderConfirmedEmail({
+      sendOrderShippedEmail({
         id: order.id,
         customerName: order.customerName,
         customerEmail: order.customerEmail,
-        items: order.items.map((i) => ({
-          name: i.name,
-          quantity: i.quantity,
-          price: Number(i.price),
-        })),
-        total: Number(order.total),
       }).catch(console.error);
     }
 
