@@ -19,9 +19,13 @@ export async function POST(request: Request) {
     const firstName = nameParts[0];
     const lastName = nameParts.slice(1).join(" ") || nameParts[0];
 
+    const notificationUrl = process.env.NEXT_PUBLIC_URL
+      ? `${process.env.NEXT_PUBLIC_URL}/api/webhooks/mercadopago`
+      : undefined;
+
     const response = await mpPayment.create({
       body: {
-        transaction_amount: amount,
+        transaction_amount: Math.round(amount * 100) / 100,
         description: `Pedido ASTRO #${orderId.slice(-8).toUpperCase()}`,
         payment_method_id: "pix",
         payer: {
@@ -30,7 +34,7 @@ export async function POST(request: Request) {
           last_name: lastName,
         },
         external_reference: orderId,
-        notification_url: `${process.env.NEXT_PUBLIC_URL}/api/webhooks/mercadopago`,
+        ...(notificationUrl && { notification_url: notificationUrl }),
       },
       requestOptions: { idempotencyKey: orderId },
     });
@@ -40,24 +44,26 @@ export async function POST(request: Request) {
     const paymentId = response.id?.toString();
 
     if (!pixCode) {
+      console.error("[PIX] Resposta MP:", JSON.stringify(response, null, 2));
       throw new Error("Mercado Pago não retornou o código PIX");
     }
 
     await prisma.order.update({
       where: { id: orderId },
-      data: {
-        paymentId,
-        pixCode,
-        pixQrCodeBase64: qrCodeBase64 ?? null,
-      },
+      data: { paymentId, pixCode, pixQrCodeBase64: qrCodeBase64 ?? null },
     });
 
     return NextResponse.json({ pixCode, qrCodeBase64 });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
-    console.error("[PIX]", error);
-    return NextResponse.json({ error: "Erro ao gerar PIX" }, { status: 500 });
+    // Loga detalhes completos do erro do Mercado Pago
+    console.error("[PIX] Erro:", error?.message);
+    console.error("[PIX] Causa:", JSON.stringify(error?.cause ?? error, null, 2));
+    return NextResponse.json(
+      { error: "Erro ao gerar PIX", detail: error?.message },
+      { status: 500 }
+    );
   }
 }
