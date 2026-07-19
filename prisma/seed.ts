@@ -58,7 +58,7 @@ async function main() {
       name: "Cinto Astro",
       slug: "cinto-astro",
       description: "Cinto com fivela metálica personalizada ASTRO. Acabamento premium. Disponível em preto e rosa.",
-      price: 49.90,
+      price: 79.90,
       categoryId: cintos.id,
       featured: true,
       active: true,

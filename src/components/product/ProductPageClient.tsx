@@ -157,13 +157,13 @@ export function ProductPageClient({ product }: { product: Product }) {
           <div className="relative aspect-square bg-secondary overflow-hidden">
             {displayImages[activeImage] ? (
               <Image
+                key={displayImages[activeImage]}
                 src={displayImages[activeImage]}
                 alt={product.name}
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
-                unoptimized
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -182,7 +182,7 @@ export function ProductPageClient({ product }: { product: Product }) {
                     activeImage === i ? "border-foreground" : "border-transparent hover:border-border"
                   }`}
                 >
-                  <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-cover" sizes="10vw" unoptimized />
+                  <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-contain" sizes="10vw" />
                 </button>
               ))}
             </div>
@@ -329,6 +329,21 @@ export function ProductPageClient({ product }: { product: Product }) {
             <h3 className="text-xs tracking-[0.15em] uppercase font-medium mb-4">Descrição</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
           </div>
+
+          {product.slug === "cinto-astro" && (
+            <div className="mt-8 pt-8 border-t border-border">
+              <h3 className="text-xs tracking-[0.15em] uppercase font-medium mb-4">Guia de Tamanho</h3>
+              <div className="relative w-full">
+                <Image
+                  src="/tamanhocintoastro.png"
+                  alt="Guia de tamanho — Cinto Astro"
+                  width={600}
+                  height={400}
+                  className="w-full h-auto"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
