@@ -40,7 +40,11 @@ export default function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [couponError, setCouponError] = useState("");
 
-  const discountAmount = appliedCoupon ? cartTotal * appliedCoupon.discount : 0;
+  // Cupom não se aplica ao Copo Astro
+  const couponEligibleTotal = items
+    .filter((i) => i.name !== "Copo Astro")
+    .reduce((s, i) => s + i.price * i.quantity, 0);
+  const discountAmount = appliedCoupon ? couponEligibleTotal * appliedCoupon.discount : 0;
   const finalTotal = cartTotal - discountAmount;
 
   const applyCoupon = () => {

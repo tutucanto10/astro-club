@@ -22,12 +22,16 @@ async function main() {
     create: { name: "Cintos", slug: "cintos", description: "Cintos personalizados" },
   });
 
+  const acessorios = await prisma.category.upsert({
+    where: { slug: "acessorios" },
+    update: {},
+    create: { name: "Acessórios", slug: "acessorios", description: "Acessórios ASTRO" },
+  });
+
   // ─── Camisa Astro Basic ───────────────────────────────────────────────
   const camisa = await prisma.product.upsert({
     where: { slug: "camisa-astro-basic" },
-    update: {
-      images: ["/camisas%20basic/azul%20e%20amarelo/IMG_2773.jpeg"],
-    },
+    update: { images: ["/camisas%20basic/azul%20e%20amarelo/IMG_2773.jpeg"] },
     create: {
       name: "Camisa Astro Basic",
       slug: "camisa-astro-basic",
@@ -51,9 +55,7 @@ async function main() {
   // ─── Cinto Astro ─────────────────────────────────────────────────────
   const cinto = await prisma.product.upsert({
     where: { slug: "cinto-astro" },
-    update: {
-      images: ["/cinto/preto/IMG_2883.jpeg"],
-    },
+    update: { price: 79.90, images: ["/cinto/preto/IMG_2883.jpeg"] },
     create: {
       name: "Cinto Astro",
       slug: "cinto-astro",
@@ -71,6 +73,28 @@ async function main() {
     data: CINTO_CORES.map((color) => ({ productId: cinto.id, color, size: "Único", stock: 10 })),
   });
   console.log("✅ Cinto Astro");
+
+  // ─── Copo Astro ──────────────────────────────────────────────────────
+  const copo = await prisma.product.upsert({
+    where: { slug: "copo-astro" },
+    update: { price: 20.00 },
+    create: {
+      name: "Copo Astro",
+      slug: "copo-astro",
+      description: "300ml de identidade. O Copo Astro traz os grafites exclusivos da marca estampados ao redor — feito em material resistente, ideal para bebidas geladas ou quentes. Uma peça pra quem carrega a energia ASTRO onde for.",
+      price: 20.00,
+      categoryId: acessorios.id,
+      featured: true,
+      active: true,
+      images: [],
+    },
+  });
+
+  await prisma.productVariant.deleteMany({ where: { productId: copo.id } });
+  await prisma.productVariant.createMany({
+    data: [{ productId: copo.id, size: "Único", stock: 20 }],
+  });
+  console.log("✅ Copo Astro");
 
   console.log("🎉 Seed concluído!");
 }

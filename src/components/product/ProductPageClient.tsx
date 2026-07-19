@@ -155,7 +155,16 @@ export function ProductPageClient({ product }: { product: Product }) {
         {/* Gallery */}
         <div className="space-y-3">
           <div className="relative aspect-square bg-secondary overflow-hidden">
-            {displayImages[activeImage] ? (
+            {product.slug === "copo-astro" ? (
+              <video
+                src="/copoastrovideopresentation.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : displayImages[activeImage] ? (
               <Image
                 key={displayImages[activeImage]}
                 src={displayImages[activeImage]}
@@ -172,7 +181,7 @@ export function ProductPageClient({ product }: { product: Product }) {
             )}
           </div>
 
-          {displayImages.length > 1 && (
+          {product.slug !== "copo-astro" && displayImages.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {displayImages.map((img, i) => (
                 <button
