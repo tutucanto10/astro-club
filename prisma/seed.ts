@@ -77,7 +77,7 @@ async function main() {
   // ─── Copo Astro ──────────────────────────────────────────────────────
   const copo = await prisma.product.upsert({
     where: { slug: "copo-astro" },
-    update: { price: 20.00 },
+    update: { price: 20.00, images: ["/previewcopoastro.png"] },
     create: {
       name: "Copo Astro",
       slug: "copo-astro",
@@ -86,7 +86,7 @@ async function main() {
       categoryId: acessorios.id,
       featured: true,
       active: true,
-      images: [],
+      images: ["/previewcopoastro.png"],
     },
   });
 
