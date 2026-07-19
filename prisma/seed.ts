@@ -31,11 +31,11 @@ async function main() {
   // ─── Camisa Astro Basic ───────────────────────────────────────────────
   const camisa = await prisma.product.upsert({
     where: { slug: "camisa-astro-basic" },
-    update: { images: ["/camisas%20basic/azul%20e%20amarelo/IMG_2773.jpeg"] },
+    update: { images: ["/camisas%20basic/azul%20e%20amarelo/IMG_2773.jpeg"], description: "Camisa oversized da ASTRO. Corte amplo, tecido 100% algodão. Logo ASTRO no peito em cor contrastante. Disponível em 4 cores exclusivas." },
     create: {
       name: "Camisa Astro Basic",
       slug: "camisa-astro-basic",
-      description: "Camisa oversized da ASTRO. Corte amplo, tecido 100% algodão. Logo ASTRO bordado no peito em cor contrastante. Disponível em 4 cores exclusivas.",
+      description: "Camisa oversized da ASTRO. Corte amplo, tecido 100% algodão. Logo ASTRO no peito em cor contrastante. Disponível em 4 cores exclusivas.",
       price: 99.90,
       categoryId: camisas.id,
       featured: true,
