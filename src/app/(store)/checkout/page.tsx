@@ -34,7 +34,7 @@ export default function CheckoutPage() {
   const cartTotal = total();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<Step>("form");
-  const [pixData, setPixData] = useState<{ code: string; qrCodeBase64?: string } | null>(null);
+  const [pixData, setPixData] = useState<{ code: string; amount?: number; qrCodeBase64?: string } | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
@@ -85,7 +85,7 @@ export default function CheckoutPage() {
       const payment = await paymentRes.json();
 
       clearCart();
-      setPixData({ code: payment.pixCode, qrCodeBase64: payment.qrCodeBase64 });
+      setPixData({ code: payment.pixCode, amount: payment.amount, qrCodeBase64: payment.qrCodeBase64 });
       setStep("pix");
     } catch (e) {
       console.error(e);
@@ -98,40 +98,51 @@ export default function CheckoutPage() {
   if (step === "pix" && pixData) {
     return (
       <div className="pt-20 min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md px-6">
+        <div className="text-center max-w-sm px-6">
           <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-2">Pagamento via</p>
-          <h1 className="font-display text-4xl tracking-wide mb-8">PIX</h1>
+          <h1 className="font-display text-4xl tracking-wide mb-2">PIX</h1>
 
-          {pixData.qrCodeBase64 && (
-            <div className="border border-border p-4 inline-block mb-6">
-              <Image
-                src={`data:image/png;base64,${pixData.qrCodeBase64}`}
-                alt="QR Code PIX"
-                width={200}
-                height={200}
-                unoptimized
-              />
-            </div>
-          )}
-
-          <p className="text-sm text-muted-foreground mb-3">Ou copie o código abaixo:</p>
-          <div className="border border-border p-3 text-xs break-all text-left mb-4 font-mono bg-secondary">
-            {pixData.code}
-          </div>
-          <button
-            onClick={() => navigator.clipboard.writeText(pixData.code)}
-            className="w-full bg-foreground text-background py-3 text-xs tracking-[0.2em] uppercase font-medium hover:opacity-90 transition-opacity mb-4"
-          >
-            Copiar código PIX
-          </button>
-          <p className="text-xs text-muted-foreground">
-            Você receberá um email quando o pagamento for confirmado. O código expira em 1 hora.
-          </p>
           {orderId && (
-            <p className="text-xs text-muted-foreground mt-3">
+            <p className="text-xs text-muted-foreground mb-8">
               Pedido #{orderId.slice(-8).toUpperCase()}
             </p>
           )}
+
+          {/* Valor */}
+          {pixData.amount && (
+            <div className="bg-secondary border border-border p-5 mb-6">
+              <p className="text-xs tracking-[0.15em] uppercase text-muted-foreground mb-1">Valor a pagar</p>
+              <p className="font-display text-3xl tracking-wide">
+                {pixData.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </p>
+            </div>
+          )}
+
+          {/* Chave PIX */}
+          <p className="text-xs text-muted-foreground mb-2">Chave PIX (CNPJ)</p>
+          <div className="border border-border p-4 text-sm font-mono bg-secondary mb-4 tracking-wider">
+            {pixData.code}
+          </div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(pixData.code);
+              alert("Chave PIX copiada!");
+            }}
+            className="w-full bg-foreground text-background py-3 text-xs tracking-[0.2em] uppercase font-medium hover:opacity-90 transition-opacity mb-6"
+          >
+            Copiar chave PIX
+          </button>
+
+          <div className="text-left space-y-2 border border-border p-4 text-xs text-muted-foreground">
+            <p>1. Abra o app do seu banco</p>
+            <p>2. Acesse <strong>PIX → Pagar → Chave PIX</strong></p>
+            <p>3. Cole a chave e confirme o valor <strong>{pixData.amount?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong></p>
+            <p>4. Envie o comprovante para o Instagram <strong>@astroclub.world</strong></p>
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-4">
+            Seu pedido será confirmado após validação do pagamento.
+          </p>
         </div>
       </div>
     );
