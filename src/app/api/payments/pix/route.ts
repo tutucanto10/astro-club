@@ -53,6 +53,8 @@ export async function POST(request: Request) {
       state: order.state,
       zipCode: order.zipCode,
       total: amount,
+      paymentConfirmed: false,
+      paymentMethod: "PIX",
       items: itemsMapped,
     }).catch(console.error);
 

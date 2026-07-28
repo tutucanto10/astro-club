@@ -84,18 +84,38 @@ export async function sendNewOrderAlert(order: {
   state: string;
   zipCode: string;
   total: number;
+  paymentConfirmed: boolean;
+  paymentMethod: "PIX" | "CARD";
   items: Array<{ name: string; quantity: number; size?: string | null; color?: string | null; price: number }>;
 }) {
+  const confirmed = order.paymentConfirmed;
+  const statusBg    = confirmed ? "#d4edda" : "#fff3cd";
+  const statusBorder = confirmed ? "#28a745" : "#e0a800";
+  const statusColor  = confirmed ? "#155724" : "#856404";
+  const statusText   = confirmed
+    ? "✅ PAGAMENTO CONFIRMADO"
+    : order.paymentMethod === "PIX"
+    ? "⏳ AGUARDANDO PIX — pagamento NÃO confirmado"
+    : "⏳ AGUARDANDO CARTÃO — pagamento NÃO confirmado";
+
+  const subject = confirmed
+    ? `✅ Pagamento confirmado — ASTRO #${order.id.slice(-8).toUpperCase()} — ${brl(order.total)}`
+    : `⏳ PIX aguardando — ASTRO #${order.id.slice(-8).toUpperCase()} — ${brl(order.total)}`;
+
   await getResend().emails.send({
     from: FROM,
     to: STORE_EMAIL,
-    subject: `🛍️ Novo pedido ASTRO — #${order.id.slice(-8).toUpperCase()} — ${brl(order.total)}`,
+    subject,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#111">
-        <h1 style="font-size:20px;letter-spacing:2px;text-transform:uppercase">Novo Pedido!</h1>
-        <p style="color:#555">Pedido <strong>#${order.id.slice(-8).toUpperCase()}</strong></p>
-        <hr style="border:none;border-top:1px solid #eee;margin:12px 0"/>
+        <h1 style="font-size:20px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">ASTRO — Novo Pedido</h1>
+        <p style="color:#555;margin-bottom:12px">Pedido <strong>#${order.id.slice(-8).toUpperCase()}</strong></p>
 
+        <div style="background:${statusBg};border:2px solid ${statusBorder};padding:12px 16px;margin-bottom:20px;border-radius:4px">
+          <p style="margin:0;font-weight:bold;font-size:14px;color:${statusColor}">${statusText}</p>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #eee;margin:12px 0"/>
         <p style="font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Dados do cliente</p>
         <p style="margin:4px 0"><strong>Nome:</strong> ${order.customerName}</p>
         <p style="margin:4px 0"><strong>Email:</strong> ${order.customerEmail}</p>
@@ -120,7 +140,6 @@ export async function sendNewOrderAlert(order: {
           <tbody>${itemRows(order.items)}</tbody>
         </table>
         <p style="font-size:17px;font-weight:bold;margin-top:12px">Total: ${brl(order.total)}</p>
-        <p style="font-size:12px;color:#888">Aguardando comprovante PIX do cliente.</p>
       </div>`,
   });
 }
