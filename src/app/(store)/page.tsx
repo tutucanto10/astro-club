@@ -183,17 +183,26 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { name: "Camisas", slug: "camisas", label: "Oversized & Premium" },
-            { name: "Bonés", slug: "bones", label: "Streetwear Essential" },
-            { name: "Cintos", slug: "cintos", label: "Acessório Exclusivo" },
-            { name: "Anéis", slug: "aneis", label: "Joia Urbana" },
+            { name: "Camisas", slug: "camisas", label: "Oversized", image: "/camisas%20basic/azul%20e%20amarelo/IMG_2773.jpeg" },
+            { name: "Bonés", slug: "bones", label: "Streetwear Essential", image: null },
+            { name: "Cintos", slug: "cintos", label: "Acessório Exclusivo", image: "/cinto/preto/IMG_2883.jpeg" },
+            { name: "Anéis", slug: "aneis", label: "Joia Urbana", image: null },
           ].map((cat) => (
             <Link
               key={cat.slug}
               href={`/products?category=${cat.slug}`}
               className="group relative aspect-square bg-secondary overflow-hidden"
             >
-              <div className="absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-foreground/60 to-transparent">
+              {cat.image && (
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                />
+              )}
+              <div className="absolute inset-0 flex flex-col justify-end p-5 bg-gradient-to-t from-foreground/70 to-transparent">
                 <p className="text-[10px] tracking-[0.2em] uppercase text-background/60 mb-1">
                   {cat.label}
                 </p>
@@ -201,11 +210,13 @@ export default async function HomePage() {
                   {cat.name}
                 </h3>
               </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-display text-[8vw] lg:text-5xl text-foreground/10 group-hover:text-foreground/20 transition-colors select-none">
-                  {cat.name[0]}
-                </span>
-              </div>
+              {!cat.image && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="font-display text-[8vw] lg:text-5xl text-foreground/10 group-hover:text-foreground/20 transition-colors select-none">
+                    {cat.name[0]}
+                  </span>
+                </div>
+              )}
             </Link>
           ))}
         </div>
