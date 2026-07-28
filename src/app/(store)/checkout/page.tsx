@@ -234,13 +234,36 @@ export default function CheckoutPage() {
               {/* Pagamento */}
               <section>
                 <h2 className="text-xs tracking-[0.2em] uppercase font-medium mb-5 pb-3 border-b border-border">
-                  Forma de Pagamento
+                  Pagamento Seguro
                 </h2>
-                <div className="border border-border p-4 flex items-center gap-3">
-                  <div>
-                    <p className="text-sm font-medium">PIX, Cartão ou Boleto</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Você escolhe como pagar na próxima tela — via Mercado Pago</p>
+                <div className="border border-border p-4">
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
+                    {/* PIX */}
+                    <div className="flex items-center gap-1.5 border border-border px-3 py-1.5 text-xs text-muted-foreground">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M6.5 12L12 6.5L17.5 12L12 17.5L6.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
+                        <path d="M12 2L22 12L12 22L2 12L12 2Z" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                      PIX
+                    </div>
+                    {/* Cartão */}
+                    <div className="flex items-center gap-1.5 border border-border px-3 py-1.5 text-xs text-muted-foreground">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                        <path d="M2 10H22" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                      Cartão
+                    </div>
+                    {/* Boleto */}
+                    <div className="flex items-center gap-1.5 border border-border px-3 py-1.5 text-xs text-muted-foreground">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="4" width="18" height="16" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+                        <path d="M7 8V16M10 8V16M13 8V16M17 8V16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                      Boleto
+                    </div>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">Processado com segurança pelo Mercado Pago</p>
                 </div>
               </section>
             </div>
