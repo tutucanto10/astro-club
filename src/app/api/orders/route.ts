@@ -14,7 +14,7 @@ const orderSchema = z.object({
   district: z.string().min(2),
   city: z.string().min(2),
   state: z.string().min(2),
-  paymentMethod: z.enum(["PIX"]),
+  paymentMethod: z.enum(["PIX", "CARD"]),
   items: z.array(
     z.object({
       productId: z.string(),

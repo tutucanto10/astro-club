@@ -24,6 +24,7 @@ const checkoutSchema = z.object({
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;
 type Step = "form" | "pix" | "success";
+type PaymentMethod = "PIX" | "CARD";
 
 const COUPONS: Record<string, number> = {
   ASTROFEST: 0.10,
@@ -34,13 +35,15 @@ export default function CheckoutPage() {
   const cartTotal = total();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<Step>("form");
-  const [pixData, setPixData] = useState<{ code: string; amount?: number; qrCodeBase64?: string } | null>(null);
+  const [pixData, setPixData] = useState<{ code: string; amount?: number } | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [couponError, setCouponError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("PIX");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [cepAutoFilled, setCepAutoFilled] = useState(false);
 
-  // Cupom não se aplica ao Copo Astro
   const couponEligibleTotal = items
     .filter((i) => i.name !== "Copo Astro")
     .reduce((s, i) => s + i.price * i.quantity, 0);
@@ -60,9 +63,30 @@ export default function CheckoutPage() {
     }
   };
 
-  const { register, handleSubmit, formState: { errors } } = useForm<CheckoutForm>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
   });
+
+  const fetchCep = async (raw: string) => {
+    const cep = raw.replace(/\D/g, "");
+    if (cep.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setValue("street", data.logradouro || "", { shouldValidate: true });
+        setValue("district", data.bairro || "", { shouldValidate: true });
+        setValue("city", data.localidade || "", { shouldValidate: true });
+        setValue("state", data.uf || "", { shouldValidate: true });
+        setCepAutoFilled(true);
+      }
+    } catch {
+      // se falhar, usuário preenche manualmente
+    } finally {
+      setCepLoading(false);
+    }
+  };
 
   const onSubmit = async (data: CheckoutForm) => {
     setLoading(true);
@@ -70,12 +94,31 @@ export default function CheckoutPage() {
       const orderRes = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, paymentMethod: "PIX", items }),
+        body: JSON.stringify({ ...data, paymentMethod, items }),
       });
       if (!orderRes.ok) throw new Error("Erro ao criar pedido");
       const { orderId: oid } = await orderRes.json();
       setOrderId(oid);
 
+      if (paymentMethod === "CARD") {
+        const prefRes = await fetch("/api/payments/preference", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: oid,
+            amount: finalTotal,
+            email: data.email,
+            name: data.name,
+          }),
+        });
+        if (!prefRes.ok) throw new Error("Erro ao criar preferência de pagamento");
+        const { initPoint } = await prefRes.json();
+        clearCart();
+        window.location.href = initPoint;
+        return;
+      }
+
+      // PIX
       const paymentRes = await fetch("/api/payments/pix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,7 +128,7 @@ export default function CheckoutPage() {
       const payment = await paymentRes.json();
 
       clearCart();
-      setPixData({ code: payment.pixCode, amount: payment.amount, qrCodeBase64: payment.qrCodeBase64 });
+      setPixData({ code: payment.pixCode, amount: payment.amount });
       setStep("pix");
     } catch (e) {
       console.error(e);
@@ -108,7 +151,6 @@ export default function CheckoutPage() {
             </p>
           )}
 
-          {/* Valor */}
           {pixData.amount && (
             <div className="bg-secondary border border-border p-5 mb-6">
               <p className="text-xs tracking-[0.15em] uppercase text-muted-foreground mb-1">Valor a pagar</p>
@@ -118,7 +160,6 @@ export default function CheckoutPage() {
             </div>
           )}
 
-          {/* Chave PIX */}
           <p className="text-xs text-muted-foreground mb-2">Chave PIX (CNPJ)</p>
           <div className="border border-border p-4 text-sm font-mono bg-secondary mb-4 tracking-wider">
             {pixData.code}
@@ -178,6 +219,9 @@ export default function CheckoutPage() {
     );
   }
 
+  const inputClass = "w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background";
+  const readonlyClass = "w-full border border-border px-4 py-3 text-sm bg-secondary text-muted-foreground cursor-default";
+
   return (
     <div className="pt-20">
       <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12">
@@ -195,19 +239,19 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Nome completo *</label>
-                    <input {...register("name")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="Seu nome" />
+                    <input {...register("name")} className={inputClass} placeholder="Seu nome" />
                     {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Email *</label>
-                      <input {...register("email")} type="email" className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="seu@email.com" />
+                      <input {...register("email")} type="email" className={inputClass} placeholder="seu@email.com" />
                       {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
                       <p className="text-[11px] text-muted-foreground mt-1">Você receberá atualizações do pedido neste email</p>
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Telefone *</label>
-                      <input {...register("phone")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="(11) 99999-9999" />
+                      <input {...register("phone")} className={inputClass} placeholder="(11) 99999-9999" />
                       {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone.message}</p>}
                     </div>
                   </div>
@@ -220,46 +264,99 @@ export default function CheckoutPage() {
                   Endereço de Entrega
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
+                  {/* CEP */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">CEP *</label>
-                      <input {...register("zipCode")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="00000-000" />
+                      <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">
+                        CEP *
+                        {cepLoading && <span className="ml-2 text-[10px] normal-case tracking-normal">buscando...</span>}
+                      </label>
+                      <input
+                        {...register("zipCode")}
+                        className={inputClass}
+                        placeholder="00000-000"
+                        maxLength={9}
+                        onChange={(e) => {
+                          register("zipCode").onChange(e);
+                          setCepAutoFilled(false);
+                          fetchCep(e.target.value);
+                        }}
+                      />
                       {errors.zipCode && <p className="text-xs text-red-500 mt-1">{errors.zipCode.message}</p>}
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Estado *</label>
-                      <input {...register("state")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="SP" maxLength={2} />
+                      <input
+                        {...register("state")}
+                        className={cepAutoFilled ? readonlyClass : inputClass}
+                        placeholder="SP"
+                        maxLength={2}
+                        readOnly={cepAutoFilled}
+                      />
                       {errors.state && <p className="text-xs text-red-500 mt-1">{errors.state.message}</p>}
                     </div>
                   </div>
+
+                  {/* Rua (auto-preenchida) */}
                   <div>
-                    <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Rua / Avenida *</label>
-                    <input {...register("street")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="Nome da rua" />
+                    <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">
+                      Rua / Avenida *
+                      {cepAutoFilled && <span className="ml-2 text-[10px] normal-case tracking-normal text-green-600">preenchido pelo CEP</span>}
+                    </label>
+                    <input
+                      {...register("street")}
+                      className={cepAutoFilled ? readonlyClass : inputClass}
+                      placeholder="Nome da rua"
+                      readOnly={cepAutoFilled}
+                    />
                     {errors.street && <p className="text-xs text-red-500 mt-1">{errors.street.message}</p>}
                   </div>
+
+                  {/* Número e complemento */}
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Número *</label>
-                      <input {...register("number")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="123" />
+                      <input {...register("number")} className={inputClass} placeholder="123" autoFocus={cepAutoFilled} />
                       {errors.number && <p className="text-xs text-red-500 mt-1">{errors.number.message}</p>}
                     </div>
                     <div className="col-span-2">
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Complemento</label>
-                      <input {...register("complement")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="Apto, Bloco..." />
+                      <input {...register("complement")} className={inputClass} placeholder="Apto, Bloco..." />
                     </div>
                   </div>
+
+                  {/* Bairro e cidade */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Bairro *</label>
-                      <input {...register("district")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="Seu bairro" />
+                      <input
+                        {...register("district")}
+                        className={cepAutoFilled ? readonlyClass : inputClass}
+                        placeholder="Seu bairro"
+                        readOnly={cepAutoFilled}
+                      />
                       {errors.district && <p className="text-xs text-red-500 mt-1">{errors.district.message}</p>}
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Cidade *</label>
-                      <input {...register("city")} className="w-full border border-border px-4 py-3 text-sm focus:outline-none focus:border-foreground transition-colors bg-background" placeholder="Sua cidade" />
+                      <input
+                        {...register("city")}
+                        className={cepAutoFilled ? readonlyClass : inputClass}
+                        placeholder="Sua cidade"
+                        readOnly={cepAutoFilled}
+                      />
                       {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city.message}</p>}
                     </div>
                   </div>
+                  {cepAutoFilled && (
+                    <button
+                      type="button"
+                      onClick={() => setCepAutoFilled(false)}
+                      className="text-xs text-muted-foreground underline underline-offset-2 text-left w-fit"
+                    >
+                      Editar endereço manualmente
+                    </button>
+                  )}
                 </div>
               </section>
 
@@ -268,9 +365,31 @@ export default function CheckoutPage() {
                 <h2 className="text-xs tracking-[0.2em] uppercase font-medium mb-5 pb-3 border-b border-border">
                   Forma de Pagamento
                 </h2>
-                <div className="border border-foreground bg-foreground/5 p-4">
-                  <p className="text-sm font-medium mb-0.5">PIX</p>
-                  <p className="text-xs text-muted-foreground">Aprovação imediata — QR Code gerado após confirmação</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("PIX")}
+                    className={`p-4 border text-left transition-colors ${
+                      paymentMethod === "PIX"
+                        ? "border-foreground bg-foreground/5"
+                        : "border-border hover:border-foreground/50"
+                    }`}
+                  >
+                    <p className="text-sm font-medium mb-0.5">PIX</p>
+                    <p className="text-xs text-muted-foreground">Chave CNPJ — aprovação manual</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("CARD")}
+                    className={`p-4 border text-left transition-colors ${
+                      paymentMethod === "CARD"
+                        ? "border-foreground bg-foreground/5"
+                        : "border-border hover:border-foreground/50"
+                    }`}
+                  >
+                    <p className="text-sm font-medium mb-0.5">Cartão</p>
+                    <p className="text-xs text-muted-foreground">Crédito ou débito via Mercado Pago</p>
+                  </button>
                 </div>
               </section>
             </div>
@@ -294,6 +413,7 @@ export default function CheckoutPage() {
                     </div>
                   ))}
                 </div>
+
                 {/* Cupom */}
                 <div className="mb-4">
                   {appliedCoupon ? (
@@ -351,12 +471,17 @@ export default function CheckoutPage() {
                     <span>{formatPrice(finalTotal)}</span>
                   </div>
                 </div>
+
                 <button
                   type="submit"
                   disabled={loading}
                   className="w-full bg-foreground text-background py-4 text-xs tracking-[0.2em] uppercase font-medium hover:opacity-90 transition-opacity disabled:opacity-50 btn-press"
                 >
-                  {loading ? "Processando..." : "Gerar PIX"}
+                  {loading
+                    ? "Processando..."
+                    : paymentMethod === "PIX"
+                    ? "Gerar PIX"
+                    : "Pagar com Cartão"}
                 </button>
                 <p className="text-[11px] text-muted-foreground text-center mt-3">
                   Seus dados estão seguros e protegidos
