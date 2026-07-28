@@ -23,24 +23,16 @@ const checkoutSchema = z.object({
 });
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;
-type Step = "form" | "pix" | "success";
-type PaymentMethod = "PIX" | "CARD";
 
-const COUPONS: Record<string, number> = {
-  ASTROFEST: 0.10,
-};
+const COUPONS: Record<string, number> = { ASTROFEST: 0.10 };
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const cartTotal = total();
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<Step>("form");
-  const [pixData, setPixData] = useState<{ code: string; amount?: number } | null>(null);
-  const [orderId, setOrderId] = useState<string | null>(null);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [couponError, setCouponError] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("PIX");
   const [cepLoading, setCepLoading] = useState(false);
   const [cepAutoFilled, setCepAutoFilled] = useState(false);
 
@@ -82,7 +74,7 @@ export default function CheckoutPage() {
         setCepAutoFilled(true);
       }
     } catch {
-      // se falhar, usuário preenche manualmente
+      // usuário preenche manualmente
     } finally {
       setCepLoading(false);
     }
@@ -94,119 +86,27 @@ export default function CheckoutPage() {
       const orderRes = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, paymentMethod, items }),
+        body: JSON.stringify({ ...data, paymentMethod: "CARD", items }),
       });
       if (!orderRes.ok) throw new Error("Erro ao criar pedido");
-      const { orderId: oid } = await orderRes.json();
-      setOrderId(oid);
+      const { orderId } = await orderRes.json();
 
-      if (paymentMethod === "CARD") {
-        const prefRes = await fetch("/api/payments/preference", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderId: oid,
-            amount: finalTotal,
-            email: data.email,
-            name: data.name,
-          }),
-        });
-        if (!prefRes.ok) throw new Error("Erro ao criar preferência de pagamento");
-        const { initPoint } = await prefRes.json();
-        clearCart();
-        window.location.href = initPoint;
-        return;
-      }
-
-      // PIX
-      const paymentRes = await fetch("/api/payments/pix", {
+      const prefRes = await fetch("/api/payments/preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: oid, amount: finalTotal, name: data.name, email: data.email }),
+        body: JSON.stringify({ orderId, amount: finalTotal, email: data.email, name: data.name }),
       });
-      if (!paymentRes.ok) throw new Error("Erro ao gerar PIX");
-      const payment = await paymentRes.json();
+      if (!prefRes.ok) throw new Error("Erro ao criar preferência de pagamento");
+      const { initPoint } = await prefRes.json();
 
       clearCart();
-      setPixData({ code: payment.pixCode, amount: payment.amount });
-      setStep("pix");
+      window.location.href = initPoint;
     } catch (e) {
       console.error(e);
       alert("Erro ao processar o pedido. Tente novamente.");
-    } finally {
       setLoading(false);
     }
   };
-
-  if (step === "pix" && pixData) {
-    return (
-      <div className="pt-20 min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-sm px-6">
-          <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground mb-2">Pagamento via</p>
-          <h1 className="font-display text-4xl tracking-wide mb-2">PIX</h1>
-
-          {orderId && (
-            <p className="text-xs text-muted-foreground mb-8">
-              Pedido #{orderId.slice(-8).toUpperCase()}
-            </p>
-          )}
-
-          {pixData.amount && (
-            <div className="bg-secondary border border-border p-5 mb-6">
-              <p className="text-xs tracking-[0.15em] uppercase text-muted-foreground mb-1">Valor a pagar</p>
-              <p className="font-display text-3xl tracking-wide">
-                {pixData.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </p>
-            </div>
-          )}
-
-          <p className="text-xs text-muted-foreground mb-2">Chave PIX (CNPJ)</p>
-          <div className="border border-border p-4 text-sm font-mono bg-secondary mb-4 tracking-wider">
-            {pixData.code}
-          </div>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(pixData.code);
-              alert("Chave PIX copiada!");
-            }}
-            className="w-full bg-foreground text-background py-3 text-xs tracking-[0.2em] uppercase font-medium hover:opacity-90 transition-opacity mb-6"
-          >
-            Copiar chave PIX
-          </button>
-
-          <div className="text-left space-y-2 border border-border p-4 text-xs text-muted-foreground">
-            <p>1. Abra o app do seu banco</p>
-            <p>2. Acesse <strong>PIX → Pagar → Chave PIX</strong></p>
-            <p>3. Cole a chave e confirme o valor <strong>{pixData.amount?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong></p>
-            <p>4. Envie o comprovante para o Instagram <strong>@astroclub.world</strong></p>
-          </div>
-
-          <p className="text-xs text-muted-foreground mt-4">
-            Seu pedido será confirmado após validação do pagamento.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === "success") {
-    return (
-      <div className="pt-20 min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md px-6">
-          <div className="w-16 h-16 bg-foreground rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </div>
-          <h1 className="font-display text-4xl tracking-wide mb-4">Pedido realizado!</h1>
-          <p className="text-muted-foreground mb-8">
-            Pagamento confirmado. Você receberá um email em breve.
-          </p>
-          <Link href="/" className="text-sm underline underline-offset-4">Voltar para o início</Link>
-        </div>
-      </div>
-    );
-  }
 
   if (items.length === 0) {
     return (
@@ -264,7 +164,6 @@ export default function CheckoutPage() {
                   Endereço de Entrega
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
-                  {/* CEP */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">
@@ -286,37 +185,24 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Estado *</label>
-                      <input
-                        {...register("state")}
-                        className={cepAutoFilled ? readonlyClass : inputClass}
-                        placeholder="SP"
-                        maxLength={2}
-                        readOnly={cepAutoFilled}
-                      />
+                      <input {...register("state")} className={cepAutoFilled ? readonlyClass : inputClass} placeholder="SP" maxLength={2} readOnly={cepAutoFilled} />
                       {errors.state && <p className="text-xs text-red-500 mt-1">{errors.state.message}</p>}
                     </div>
                   </div>
 
-                  {/* Rua (auto-preenchida) */}
                   <div>
                     <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">
                       Rua / Avenida *
                       {cepAutoFilled && <span className="ml-2 text-[10px] normal-case tracking-normal text-green-600">preenchido pelo CEP</span>}
                     </label>
-                    <input
-                      {...register("street")}
-                      className={cepAutoFilled ? readonlyClass : inputClass}
-                      placeholder="Nome da rua"
-                      readOnly={cepAutoFilled}
-                    />
+                    <input {...register("street")} className={cepAutoFilled ? readonlyClass : inputClass} placeholder="Nome da rua" readOnly={cepAutoFilled} />
                     {errors.street && <p className="text-xs text-red-500 mt-1">{errors.street.message}</p>}
                   </div>
 
-                  {/* Número e complemento */}
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Número *</label>
-                      <input {...register("number")} className={inputClass} placeholder="123" autoFocus={cepAutoFilled} />
+                      <input {...register("number")} className={inputClass} placeholder="123" />
                       {errors.number && <p className="text-xs text-red-500 mt-1">{errors.number.message}</p>}
                     </div>
                     <div className="col-span-2">
@@ -325,35 +211,20 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Bairro e cidade */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Bairro *</label>
-                      <input
-                        {...register("district")}
-                        className={cepAutoFilled ? readonlyClass : inputClass}
-                        placeholder="Seu bairro"
-                        readOnly={cepAutoFilled}
-                      />
+                      <input {...register("district")} className={cepAutoFilled ? readonlyClass : inputClass} placeholder="Seu bairro" readOnly={cepAutoFilled} />
                       {errors.district && <p className="text-xs text-red-500 mt-1">{errors.district.message}</p>}
                     </div>
                     <div>
                       <label className="text-xs uppercase tracking-wider text-muted-foreground block mb-1.5">Cidade *</label>
-                      <input
-                        {...register("city")}
-                        className={cepAutoFilled ? readonlyClass : inputClass}
-                        placeholder="Sua cidade"
-                        readOnly={cepAutoFilled}
-                      />
+                      <input {...register("city")} className={cepAutoFilled ? readonlyClass : inputClass} placeholder="Sua cidade" readOnly={cepAutoFilled} />
                       {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city.message}</p>}
                     </div>
                   </div>
                   {cepAutoFilled && (
-                    <button
-                      type="button"
-                      onClick={() => setCepAutoFilled(false)}
-                      className="text-xs text-muted-foreground underline underline-offset-2 text-left w-fit"
-                    >
+                    <button type="button" onClick={() => setCepAutoFilled(false)} className="text-xs text-muted-foreground underline underline-offset-2 text-left w-fit">
                       Editar endereço manualmente
                     </button>
                   )}
@@ -365,31 +236,11 @@ export default function CheckoutPage() {
                 <h2 className="text-xs tracking-[0.2em] uppercase font-medium mb-5 pb-3 border-b border-border">
                   Forma de Pagamento
                 </h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("PIX")}
-                    className={`p-4 border text-left transition-colors ${
-                      paymentMethod === "PIX"
-                        ? "border-foreground bg-foreground/5"
-                        : "border-border hover:border-foreground/50"
-                    }`}
-                  >
-                    <p className="text-sm font-medium mb-0.5">PIX</p>
-                    <p className="text-xs text-muted-foreground">Chave CNPJ — aprovação manual</p>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("CARD")}
-                    className={`p-4 border text-left transition-colors ${
-                      paymentMethod === "CARD"
-                        ? "border-foreground bg-foreground/5"
-                        : "border-border hover:border-foreground/50"
-                    }`}
-                  >
-                    <p className="text-sm font-medium mb-0.5">Cartão</p>
-                    <p className="text-xs text-muted-foreground">Crédito ou débito via Mercado Pago</p>
-                  </button>
+                <div className="border border-border p-4 flex items-center gap-3">
+                  <div>
+                    <p className="text-sm font-medium">PIX, Cartão ou Boleto</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Você escolhe como pagar na próxima tela — via Mercado Pago</p>
+                  </div>
                 </div>
               </section>
             </div>
@@ -419,11 +270,7 @@ export default function CheckoutPage() {
                   {appliedCoupon ? (
                     <div className="flex items-center justify-between bg-foreground/5 border border-foreground/20 px-3 py-2">
                       <span className="text-xs font-medium tracking-wider">{appliedCoupon.code} — {appliedCoupon.discount * 100}% OFF</span>
-                      <button
-                        type="button"
-                        onClick={() => { setAppliedCoupon(null); setCouponInput(""); }}
-                        className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
-                      >
+                      <button type="button" onClick={() => { setAppliedCoupon(null); setCouponInput(""); }} className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2">
                         Remover
                       </button>
                     </div>
@@ -438,11 +285,7 @@ export default function CheckoutPage() {
                           placeholder="Cupom de desconto"
                           className="flex-1 border border-border px-3 py-2 text-xs uppercase tracking-wider focus:outline-none focus:border-foreground bg-background"
                         />
-                        <button
-                          type="button"
-                          onClick={applyCoupon}
-                          className="border border-border px-3 py-2 text-xs tracking-wider uppercase hover:bg-foreground hover:text-background transition-colors"
-                        >
+                        <button type="button" onClick={applyCoupon} className="border border-border px-3 py-2 text-xs tracking-wider uppercase hover:bg-foreground hover:text-background transition-colors">
                           Aplicar
                         </button>
                       </div>
@@ -477,14 +320,10 @@ export default function CheckoutPage() {
                   disabled={loading}
                   className="w-full bg-foreground text-background py-4 text-xs tracking-[0.2em] uppercase font-medium hover:opacity-90 transition-opacity disabled:opacity-50 btn-press"
                 >
-                  {loading
-                    ? "Processando..."
-                    : paymentMethod === "PIX"
-                    ? "Gerar PIX"
-                    : "Pagar com Cartão"}
+                  {loading ? "Processando..." : "Ir para Pagamento"}
                 </button>
                 <p className="text-[11px] text-muted-foreground text-center mt-3">
-                  Seus dados estão seguros e protegidos
+                  Você escolhe PIX, cartão ou boleto na próxima tela
                 </p>
               </div>
             </div>
