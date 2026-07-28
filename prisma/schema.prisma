@@ -24,6 +24,7 @@ enum PaymentStatus {
 
 enum PaymentMethod {
   PIX
+  CARD
 }
 
 model Category {
