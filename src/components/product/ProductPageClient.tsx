@@ -32,9 +32,6 @@ const COLOR_MAP: Record<string, { primary: string; secondary: string }> = {
   "bege e verde":      { primary: "#C8A882", secondary: "#3B5323" },
   "preto e vermelho":  { primary: "#111111", secondary: "#DC2626" },
   "verde e bege":      { primary: "#3B5323", secondary: "#D4B896" },
-  "marrom e azul claro": { primary: "#6B3A2A", secondary: "#7EC8E3" },
-  "grená e dourado":   { primary: "#6B1B2A", secondary: "#C9A84C" },
-  "branco e vermelho": { primary: "#F5F5F5", secondary: "#DC2626" },
   "preto":             { primary: "#111111", secondary: "#333333" },
   "rosa":              { primary: "#F4A7B9", secondary: "#e08090" },
 };

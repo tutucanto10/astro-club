@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Sobre — ASTRO Club",
@@ -22,23 +21,9 @@ export default function AboutPage() {
 
       <div className="border-t border-border" />
 
-      {/* Foto + Texto */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-
-        {/* Foto */}
-        <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
-          <Image
-            src="https://i.ibb.co/7N6r8YPT/Whats-App-Image-2026-06-27-at-17-59-52.jpg"
-            alt="Astro Club — Fundadores"
-            fill
-            className="object-cover"
-            priority
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-        </div>
-
-        {/* Texto */}
-        <div className="space-y-10 lg:pt-8">
+      {/* Texto */}
+      <div className="max-w-3xl mx-auto px-6 lg:px-8 py-20">
+        <div className="space-y-10">
           <div className="space-y-6">
             <p className="text-muted-foreground leading-relaxed text-base">
               Fundada em 2020 por Artur Canto e Gabriel Barros, a Astro Club nasceu das ruas e para as ruas.

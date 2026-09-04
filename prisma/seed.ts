@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const CAMISA_CORES = ["azul e amarelo", "bege e verde", "preto e vermelho", "verde e bege", "marrom e azul claro", "grená e dourado", "branco e vermelho"];
+const CAMISA_CORES = ["azul e amarelo", "bege e verde", "preto e vermelho", "verde e bege"];
 const CAMISA_TAMANHOS = ["P", "M", "G", "GG"];
 
 const CINTO_CORES = ["preto", "rosa"];
