@@ -107,7 +107,7 @@ export async function sendOrderPaidEmail(order: {
         <p style="font-size:16px;font-weight:bold;margin-bottom:20px">Total: ${brl(order.total)}</p>
 
         <p style="font-size:13px;color:#555">Seu pedido será despachado em até 3 dias úteis. Você receberá outro e-mail com o código de rastreamento quando sair para entrega.</p>
-        <p style="font-size:12px;color:#888;margin-top:16px">Dúvidas? Fale com a gente no Instagram <strong>@astroclub.world</strong> ou pelo e-mail pedidos@astroclub.world.</p>
+        <p style="font-size:12px;color:#888;margin-top:16px">Dúvidas? Fale com a gente no Instagram <strong>@astroclub.world</strong> ou pelo e-mail astrosuporte5@gmail.com.</p>
       </div>`,
   });
 }

@@ -22,7 +22,7 @@ const faqs = [
   {
     question: "Posso trocar ou devolver um produto?",
     answer:
-      "Sim. Aceitamos trocas e devoluções em até 7 dias após o recebimento do produto, desde que ele esteja em perfeito estado, sem uso e com a etiqueta. Entre em contato conosco pelo Instagram ou pelo e-mail pedidos@astroclub.world para iniciar o processo.",
+      "Sim. Aceitamos trocas e devoluções em até 7 dias após o recebimento do produto, desde que ele esteja em perfeito estado, sem uso e com a etiqueta. Entre em contato conosco pelo Instagram ou pelo e-mail astrosuporte5@gmail.com para iniciar o processo.",
   },
   {
     question: "Como funciona o tamanho das camisas?",
@@ -37,7 +37,7 @@ const faqs = [
   {
     question: "Como entrar em contato com a ASTRO?",
     answer:
-      "Você pode nos chamar pelo Instagram @astroclub.world ou enviar um e-mail para pedidos@astroclub.world. Respondemos em até 24 horas nos dias úteis.",
+      "Você pode nos chamar pelo Instagram @astroclub.world ou enviar um e-mail para astrosuporte5@gmail.com. Respondemos em até 24 horas nos dias úteis.",
   },
 ];
 

@@ -78,8 +78,8 @@ export default function TermsPage() {
           <h2 className="font-display text-2xl tracking-wide">Contato</h2>
           <p className="text-muted-foreground leading-relaxed">
             Dúvidas sobre estes termos podem ser enviadas para{" "}
-            <a href="mailto:pedidos@astroclub.world" className="underline underline-offset-4">
-              pedidos@astroclub.world
+            <a href="mailto:astrosuporte5@gmail.com" className="underline underline-offset-4">
+              astrosuporte5@gmail.com
             </a>.
           </p>
         </section>

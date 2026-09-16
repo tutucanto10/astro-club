@@ -64,8 +64,8 @@ export default function ShippingPage() {
           <h2 className="font-display text-2xl tracking-wide">Como Solicitar</h2>
           <p className="text-muted-foreground leading-relaxed">
             Entre em contato pelo Instagram <strong>@astroclub.world</strong> ou pelo e-mail{" "}
-            <a href="mailto:pedidos@astroclub.world" className="underline underline-offset-4">
-              pedidos@astroclub.world
+            <a href="mailto:astrosuporte5@gmail.com" className="underline underline-offset-4">
+              astrosuporte5@gmail.com
             </a>{" "}
             informando o número do pedido e o motivo da troca ou devolução.
           </p>

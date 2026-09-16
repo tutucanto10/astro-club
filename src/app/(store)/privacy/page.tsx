@@ -64,8 +64,8 @@ export default function PrivacyPage() {
             De acordo com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem direito de
             acessar, corrigir ou solicitar a exclusão dos seus dados pessoais. Para exercer esses
             direitos, entre em contato pelo e-mail{" "}
-            <a href="mailto:pedidos@astroclub.world" className="underline underline-offset-4">
-              pedidos@astroclub.world
+            <a href="mailto:astrosuporte5@gmail.com" className="underline underline-offset-4">
+              astrosuporte5@gmail.com
             </a>.
           </p>
         </section>
