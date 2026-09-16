@@ -35,11 +35,6 @@ const faqs = [
       "Sim, todos os produtos ASTRO são produzidos no Brasil. As camisas são em algodão 100% nacional e os cintos são fabricados com materiais selecionados aqui mesmo.",
   },
   {
-    question: "O que é o cupom ASTROFEST?",
-    answer:
-      "O cupom ASTROFEST dá 10% de desconto em toda a compra, exceto no Copo Astro. Basta inserir o código no campo de cupom durante o checkout antes de ir para o pagamento.",
-  },
-  {
     question: "Como entrar em contato com a ASTRO?",
     answer:
       "Você pode nos chamar pelo Instagram @astroclub.world ou enviar um e-mail para pedidos@astroclub.world. Respondemos em até 24 horas nos dias úteis.",
