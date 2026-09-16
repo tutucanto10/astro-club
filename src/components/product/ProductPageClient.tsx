@@ -191,7 +191,7 @@ export function ProductPageClient({ product }: { product: Product }) {
                     activeImage === i ? "border-foreground" : "border-transparent hover:border-border"
                   }`}
                 >
-                  <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-contain" sizes="10vw" />
+                  <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-contain" sizes="10vw" loading="lazy" />
                 </button>
               ))}
             </div>
