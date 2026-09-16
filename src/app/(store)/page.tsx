@@ -141,33 +141,22 @@ export default async function HomePage() {
       </section>
 
       {/* Split Feature */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 min-h-[70vh]">
-        <div className="bg-foreground flex flex-col justify-end p-10 lg:p-16 min-h-[50vh] lg:min-h-0">
-          <p className="text-background/40 text-xs tracking-[0.25em] uppercase mb-3">
-            Identidade
-          </p>
-          <h2 className="font-display text-4xl lg:text-5xl text-background leading-tight tracking-wide mb-5">
-            Feito para quem<br />define o estilo
-          </h2>
-          <p className="text-background/60 text-sm leading-relaxed mb-8 max-w-sm">
-            Cada peça ASTRO é projetada com precisão e intenção.
-            Do corte à estampa, tudo comunica quem você é.
-          </p>
-          <Link href="/about">
-            <button className="self-start border border-background/30 text-background px-8 py-3 text-xs tracking-[0.2em] uppercase hover:bg-background hover:text-foreground transition-all">
-              Nossa história
-            </button>
-          </Link>
-        </div>
-        <div className="min-h-[50vh] lg:min-h-0 relative overflow-hidden">
-          <Image
-            src="https://i.ibb.co/7N6r8YPT/Whats-App-Image-2026-06-27-at-17-59-52.jpg"
-            alt="Astro Club"
-            fill
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-        </div>
+      <section className="bg-foreground px-10 lg:px-20 py-20 lg:py-28 flex flex-col justify-end">
+        <p className="text-background/40 text-xs tracking-[0.25em] uppercase mb-3">
+          Identidade
+        </p>
+        <h2 className="font-display text-4xl lg:text-5xl text-background leading-tight tracking-wide mb-5 max-w-2xl">
+          Feito para quem<br />define o estilo
+        </h2>
+        <p className="text-background/60 text-sm leading-relaxed mb-8 max-w-sm">
+          Cada peça ASTRO é projetada com precisão e intenção.
+          Do corte à estampa, tudo comunica quem você é.
+        </p>
+        <Link href="/about">
+          <button className="self-start border border-background/30 text-background px-8 py-3 text-xs tracking-[0.2em] uppercase hover:bg-background hover:text-foreground transition-all">
+            Nossa história
+          </button>
+        </Link>
       </section>
 
       {/* Categories */}
