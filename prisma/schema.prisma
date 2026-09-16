@@ -91,6 +91,7 @@ model Order {
   pixCode       String?
   pixQrCodeBase64 String?     @db.Text
   notes         String?
+  trackingCode  String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 

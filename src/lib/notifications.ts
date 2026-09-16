@@ -70,6 +70,48 @@ export async function sendOrderReceivedEmail(order: {
   });
 }
 
+// ─── Para o cliente: pagamento confirmado pelo Mercado Pago ──────────────
+export async function sendOrderPaidEmail(order: {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  total: number;
+  items: Array<{ name: string; quantity: number; size?: string | null; color?: string | null; price: number }>;
+}) {
+  await getResend().emails.send({
+    from: FROM,
+    to: order.customerEmail,
+    subject: `Pagamento confirmado — ASTRO #${order.id.slice(-8).toUpperCase()}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#111">
+        <h1 style="font-size:22px;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px">ASTRO</h1>
+        <hr style="border:none;border-top:2px solid #111;margin:0 0 20px"/>
+
+        <div style="background:#d4edda;border:2px solid #28a745;padding:12px 16px;margin-bottom:20px;border-radius:4px">
+          <p style="margin:0;font-weight:bold;font-size:14px;color:#155724">✅ Pagamento confirmado! Estamos preparando seu pedido.</p>
+        </div>
+
+        <p style="color:#555">Olá, <strong>${order.customerName}</strong>! Seu pagamento foi aprovado.</p>
+        <p style="font-size:13px;color:#888">Pedido #${order.id.slice(-8).toUpperCase()}</p>
+
+        <table width="100%" style="border-collapse:collapse;margin:20px 0;font-size:14px">
+          <thead>
+            <tr style="background:#f5f5f5">
+              <th style="padding:8px;text-align:left">Produto</th>
+              <th style="padding:8px;text-align:center">Qtd</th>
+              <th style="padding:8px;text-align:right">Valor</th>
+            </tr>
+          </thead>
+          <tbody>${itemRows(order.items)}</tbody>
+        </table>
+        <p style="font-size:16px;font-weight:bold;margin-bottom:20px">Total: ${brl(order.total)}</p>
+
+        <p style="font-size:13px;color:#555">Seu pedido será despachado em até 3 dias úteis. Você receberá outro e-mail com o código de rastreamento quando sair para entrega.</p>
+        <p style="font-size:12px;color:#888;margin-top:16px">Dúvidas? Fale com a gente no Instagram <strong>@astroclub.world</strong> ou pelo e-mail pedidos@astroclub.world.</p>
+      </div>`,
+  });
+}
+
 // ─── Para a loja: alerta de novo pedido com todos os dados ───────────────
 export async function sendNewOrderAlert(order: {
   id: string;

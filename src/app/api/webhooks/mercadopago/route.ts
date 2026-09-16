@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { mpPayment } from "@/lib/mercadopago";
-import { sendNewOrderAlert } from "@/lib/notifications";
+import { sendNewOrderAlert, sendOrderPaidEmail } from "@/lib/notifications";
 
 export async function POST(request: Request) {
   try {
@@ -19,6 +19,20 @@ export async function POST(request: Request) {
         data: { paymentStatus: "PAID", status: "CONFIRMED" },
         include: { items: true },
       });
+
+      sendOrderPaidEmail({
+        id: order.id,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        total: Number(order.total),
+        items: order.items.map((i) => ({
+          name: i.name,
+          quantity: i.quantity,
+          size: i.size,
+          color: i.color,
+          price: Number(i.price),
+        })),
+      }).catch(console.error);
 
       sendNewOrderAlert({
         id: order.id,

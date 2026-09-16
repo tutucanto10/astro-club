@@ -6,6 +6,7 @@ const CAMISA_CORES = ["azul e amarelo", "bege e verde", "preto e vermelho", "ver
 const CAMISA_TAMANHOS = ["P", "M", "G", "GG"];
 
 const CINTO_CORES = ["preto", "rosa"];
+const CINTO_TAMANHOS = ["85cm", "90cm", "95cm", "100cm"];
 
 async function main() {
   console.log("🌱 Seeding...");
@@ -70,7 +71,9 @@ async function main() {
 
   await prisma.productVariant.deleteMany({ where: { productId: cinto.id } });
   await prisma.productVariant.createMany({
-    data: CINTO_CORES.map((color) => ({ productId: cinto.id, color, size: "Único", stock: 10 })),
+    data: CINTO_CORES.flatMap((color) =>
+      CINTO_TAMANHOS.map((size) => ({ productId: cinto.id, color, size, stock: 10 }))
+    ),
   });
   console.log("✅ Cinto Astro");
 
