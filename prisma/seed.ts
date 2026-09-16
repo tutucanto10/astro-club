@@ -55,11 +55,11 @@ async function main() {
   // ─── Cinto Astro ─────────────────────────────────────────────────────
   const cinto = await prisma.product.upsert({
     where: { slug: "cinto-astro" },
-    update: { price: 89.90, images: ["/cinto/preto/IMG_2883.jpeg"] },
+    update: { price: 89.90, images: ["/cinto/preto/IMG_2883.jpeg"], description: "Cinto com fivela metálica personalizada ASTRO. Disponível em preto e rosa." },
     create: {
       name: "Cinto Astro",
       slug: "cinto-astro",
-      description: "Cinto com fivela metálica personalizada ASTRO. Acabamento premium. Disponível em preto e rosa.",
+      description: "Cinto com fivela metálica personalizada ASTRO. Disponível em preto e rosa.",
       price: 89.90,
       categoryId: cintos.id,
       featured: true,
